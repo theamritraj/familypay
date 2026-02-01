@@ -13,29 +13,23 @@ const PrimaryDashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [darkMode, setDarkMode] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [circle, setCircle] = useState(mockCircle);
   const [pendingPayments, setPendingPayments] = useState([]);
-  const [analytics, setAnalytics] = useState(null);
-  const [recentTransactions, setRecentTransactions] = useState([]);
-  const [activityFeed, setActivityFeed] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAddMember, setShowAddMember] = useState(false);
   const [selectedMember, setSelectedMember] = useState(null);
 
   const loadDashboardData = async () => {
     try {
-      const [circleRes, pendingRes, analyticsRes] = await Promise.all([
+      const [circleRes, pendingRes] = await Promise.all([
         mockAPI.getCircle(),
         mockAPI.getPendingPayments(),
-        mockAPI.getAnalytics(),
       ]);
 
       setCircle(circleRes.data.data);
       setPendingPayments(pendingRes.data.data);
-      setAnalytics(analyticsRes.data.data);
       setLoading(false);
     } catch {
       console.error("Error loading dashboard");
@@ -68,7 +62,33 @@ const PrimaryDashboard = () => {
   };
 
   useEffect(() => {
-    loadDashboardData();
+    let isMounted = true;
+
+    const loadData = async () => {
+      try {
+        const [circleRes, pendingRes] = await Promise.all([
+          mockAPI.getCircle(),
+          mockAPI.getPendingPayments(),
+        ]);
+
+        if (isMounted) {
+          setCircle(circleRes.data.data);
+          setPendingPayments(pendingRes.data.data);
+          setLoading(false);
+        }
+      } catch {
+        if (isMounted) {
+          console.error("Error loading dashboard");
+          setLoading(false);
+        }
+      }
+    };
+
+    loadData();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   useEffect(() => {
@@ -123,8 +143,6 @@ const PrimaryDashboard = () => {
                     type="text"
                     placeholder="Search transactions, members..."
                     className="bg-transparent border-0 outline-none text-text placeholder-text-muted flex-1 text-sm"
-                    onFocus={() => setSearchOpen(true)}
-                    onBlur={() => setSearchOpen(false)}
                   />
                 </div>
               </div>
