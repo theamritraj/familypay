@@ -255,11 +255,11 @@ const ProfilePage = () => {
                           className="btn btn-primary btn-sm flex items-center gap-2"
                         >
                           {loading ? (
-                            "Saving..."
+                            <div className="loading-spinner w-4 h-4"></div>
                           ) : (
                             <>
-                              <Save className="w-4 h-4" />
-                              Save
+                              <Check className="w-4 h-4" />
+                              Save Changes
                             </>
                           )}
                         </button>
@@ -768,7 +768,11 @@ const ProfilePage = () => {
                   disabled={loading}
                   className="flex-1 btn btn-primary"
                 >
-                  {loading ? "Changing..." : "Change Password"}
+                  {loading ? (
+                    <div className="loading-spinner mx-auto"></div>
+                  ) : (
+                    "Change Password"
+                  )}
                 </button>
               </div>
             </div>

@@ -197,7 +197,11 @@ const Register = () => {
             className="btn btn-primary w-full"
             disabled={loading}
           >
-            {loading ? "Creating account..." : "Register"}
+            {loading ? (
+              <div className="loading-spinner mx-auto"></div>
+            ) : (
+              "Register"
+            )}
           </button>
         </form>
 

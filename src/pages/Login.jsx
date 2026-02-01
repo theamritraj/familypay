@@ -204,7 +204,11 @@ const Login = () => {
           >
             <GoogleIcon className="w-5 h-5" />
             <span className="text-text font-medium">
-              {loading ? "Signing in..." : "Continue with Google"}
+              {loading ? (
+                <div className="loading-spinner w-4 h-4"></div>
+              ) : (
+                "Continue with Google"
+              )}
             </span>
           </button>
 
@@ -361,13 +365,13 @@ const Login = () => {
               disabled={loading}
               className="w-full py-3 bg-gradient-to-r from-primary to-secondary text-white font-medium rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50"
             >
-              {loading
-                ? isLogin
-                  ? "Signing in..."
-                  : "Creating account..."
-                : isLogin
-                  ? "Sign In"
-                  : "Create Account"}
+              {loading ? (
+                <div className="loading-spinner mx-auto"></div>
+              ) : isLogin ? (
+                "Sign In"
+              ) : (
+                "Create Account"
+              )}
             </button>
           </form>
 

@@ -425,7 +425,11 @@ const PayPage = () => {
                     disabled={loading || !paymentData.upiId}
                     className="w-full btn btn-primary text-lg py-4"
                   >
-                    {loading ? "Processing..." : `Pay ₹${paymentData.amount}`}
+                    {loading ? (
+                      <div className="loading-spinner mx-auto"></div>
+                    ) : (
+                      `Pay ₹${paymentData.amount}`
+                    )}
                   </button>
                 </div>
               </div>
@@ -498,9 +502,11 @@ const PayPage = () => {
                   }
                   className="w-full btn btn-primary"
                 >
-                  {loading
-                    ? "Processing..."
-                    : `Pay ₹${paymentData.amount || "0"}`}
+                  {loading ? (
+                    <div className="loading-spinner mx-auto"></div>
+                  ) : (
+                    `Pay ₹${paymentData.amount || "0"}`
+                  )}
                 </button>
               </div>
             </div>
