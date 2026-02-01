@@ -134,7 +134,6 @@ const ProfilePage = () => {
 
   const handleLogout = () => {
     logout();
-    navigate("/login");
   };
 
   const menuItems = [

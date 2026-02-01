@@ -5,7 +5,7 @@ import { firebaseDB } from "../firebase";
 import paymentService from "../services/paymentService";
 import PaymentRequestModal from "../components/PaymentRequestModal";
 import ContactListModal from "../components/ContactListModal";
-import QRScannerModal from "../components/QRScannerModal";
+import QRScannerModal from "../components/QRScannerModalLive";
 import BottomNav from "../components/BottomNav";
 import {
   QrCode,
@@ -553,7 +553,6 @@ const SecondaryDashboard = () => {
         isOpen={showQRScannerModal}
         onClose={() => setShowQRScannerModal(false)}
         onScanSuccess={handleQRScanSuccess}
-        user={user}
       />
     </div>
   );

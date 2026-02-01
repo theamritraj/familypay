@@ -6,15 +6,16 @@ import {
   CheckCircle,
   AlertCircle,
   Loader2,
+  RefreshCw,
 } from "lucide-react";
 
 const QRScannerModal = ({ isOpen, onClose, onScanSuccess }) => {
   const [isScanning, setIsScanning] = useState(false);
   const [scanResult, setScanResult] = useState(null);
   const [error, setError] = useState(null);
-  const [permission, setPermission] = useState(null);
-  const [stream, setStream] = useState(null);
+  const [loading, setLoading] = useState(false);
   const videoRef = useRef(null);
+  const streamRef = useRef(null);
 
   // Mock QR codes for demo purposes
   const mockQRCodes = [
@@ -50,102 +51,91 @@ const QRScannerModal = ({ isOpen, onClose, onScanSuccess }) => {
     },
   ];
 
-  const requestCameraPermission = async () => {
-    try {
-      setError(null);
-
-      // First try to get camera stream directly
-      const mediaStream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: "environment",
-          width: { ideal: 1280 },
-          height: { ideal: 720 },
-        },
-      });
-
-      setStream(mediaStream);
-      setPermission("granted");
-
-      if (videoRef.current) {
-        videoRef.current.srcObject = mediaStream;
-        // Wait for video to be ready
-        videoRef.current.onloadedmetadata = () => {
-          videoRef.current.play();
-          setIsScanning(true);
-          simulateScanning();
-        };
-      }
-    } catch (err) {
-      console.error("Camera permission error:", err);
-      setPermission("denied");
-
-      if (err.name === "NotAllowedError") {
-        setError(
-          "Camera access denied. Please enable camera permissions and try again.",
-        );
-      } else if (err.name === "NotFoundError") {
-        setError("No camera found. Please ensure your device has a camera.");
-      } else {
-        setError("Unable to access camera. Please check your camera settings.");
-      }
-    }
-  };
-
   const startCamera = async () => {
-    try {
-      setError(null);
-      const mediaStream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: "environment",
-          width: { ideal: 1280 },
-          height: { ideal: 720 },
-        },
-      });
+    setLoading(true);
+    setError(null);
 
-      setStream(mediaStream);
+    try {
+      // Stop any existing stream
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+      }
+
+      // Try to get camera access with fallback options
+      let stream = null;
+      
+      try {
+        // Try rear camera first
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { 
+            facingMode: "environment",
+            width: { ideal: 640 },
+            height: { ideal: 480 }
+          },
+        });
+      } catch (err) {
+        console.log("Rear camera failed, trying front camera:", err);
+        // Fallback to front camera
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { 
+            facingMode: "user",
+            width: { ideal: 640 },
+            height: { ideal: 480 }
+          },
+        });
+      }
+
+      streamRef.current = stream;
 
       if (videoRef.current) {
-        videoRef.current.srcObject = mediaStream;
+        videoRef.current.srcObject = stream;
+        
         // Wait for video to be ready
         videoRef.current.onloadedmetadata = () => {
-          videoRef.current.play();
-          setIsScanning(true);
-          simulateScanning();
+          videoRef.current.play()
+            .then(() => {
+              setIsScanning(true);
+              setLoading(false);
+              // Start simulated scanning after 2 seconds
+              setTimeout(() => {
+                if (isScanning) {
+                  const randomQR = mockQRCodes[Math.floor(Math.random() * mockQRCodes.length)];
+                  handleScanSuccess(randomQR);
+                }
+              }, 2000);
+            })
+            .catch(err => {
+              console.error("Video play failed:", err);
+              setError("Failed to start camera preview");
+              setLoading(false);
+            });
         };
       }
     } catch (err) {
-      console.error("Camera start error:", err);
-      setPermission("denied");
-
-      if (err.name === "NotAllowedError") {
-        setError(
-          "Camera access denied. Please enable camera permissions and try again.",
-        );
-      } else if (err.name === "NotFoundError") {
-        setError("No camera found. Please ensure your device has a camera.");
+      console.error("Camera access error:", err);
+      setLoading(false);
+      
+      if (err.name === 'NotAllowedError') {
+        setError("Camera access denied. Please allow camera permissions and try again.");
+      } else if (err.name === 'NotFoundError') {
+        setError("No camera found on this device.");
+      } else if (err.name === 'NotReadableError') {
+        setError("Camera is already in use by another application.");
       } else {
-        setError("Unable to access camera. Please check your camera settings.");
+        setError("Failed to access camera. Please check your device settings.");
       }
     }
   };
 
   const stopCamera = () => {
-    if (stream) {
-      stream.getTracks().forEach((track) => track.stop());
-      setStream(null);
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
     }
     setIsScanning(false);
-  };
-
-  const simulateScanning = () => {
-    // Simulate QR code detection after 3 seconds
-    setTimeout(() => {
-      if (isScanning) {
-        const randomQR =
-          mockQRCodes[Math.floor(Math.random() * mockQRCodes.length)];
-        handleScanSuccess(randomQR);
-      }
-    }, 3000);
   };
 
   const handleScanSuccess = (qrData) => {
@@ -179,69 +169,21 @@ const QRScannerModal = ({ isOpen, onClose, onScanSuccess }) => {
     onClose();
   };
 
+  const handleManualEntry = () => {
+    // Use a random QR code for manual entry demo
+    const randomQR = mockQRCodes[Math.floor(Math.random() * mockQRCodes.length)];
+    handleScanSuccess(randomQR);
+  };
+
   useEffect(() => {
-    let isMounted = true;
-
     if (isOpen) {
-      const initializeCamera = async () => {
-        try {
-          setError(null);
-
-          // First try to get camera stream directly
-          const mediaStream = await navigator.mediaDevices.getUserMedia({
-            video: {
-              facingMode: "environment",
-              width: { ideal: 1280 },
-              height: { ideal: 720 },
-            },
-          });
-
-          if (isMounted) {
-            setStream(mediaStream);
-            setPermission("granted");
-
-            if (videoRef.current) {
-              videoRef.current.srcObject = mediaStream;
-              // Wait for video to be ready
-              videoRef.current.onloadedmetadata = () => {
-                if (isMounted) {
-                  videoRef.current.play();
-                  setIsScanning(true);
-                  simulateScanning();
-                }
-              };
-            }
-          }
-        } catch (err) {
-          console.error("Camera permission error:", err);
-          if (isMounted) {
-            setPermission("denied");
-
-            if (err.name === "NotAllowedError") {
-              setError(
-                "Camera access denied. Please enable camera permissions and try again.",
-              );
-            } else if (err.name === "NotFoundError") {
-              setError(
-                "No camera found. Please ensure your device has a camera.",
-              );
-            } else {
-              setError(
-                "Unable to access camera. Please check your camera settings.",
-              );
-            }
-          }
-        }
-      };
-
-      initializeCamera();
+      startCamera();
+    } else {
+      stopCamera();
     }
 
     return () => {
-      isMounted = false;
-      if (stream) {
-        stream.getTracks().forEach((track) => track.stop());
-      }
+      stopCamera();
     };
   }, [isOpen]);
 
@@ -270,7 +212,12 @@ const QRScannerModal = ({ isOpen, onClose, onScanSuccess }) => {
                 className="relative bg-black rounded-lg overflow-hidden"
                 style={{ aspectRatio: "1" }}
               >
-                {isScanning ? (
+                {loading ? (
+                  <div className="flex flex-col items-center justify-center h-full text-white">
+                    <Loader2 className="w-16 h-16 animate-spin mb-4" />
+                    <p className="text-sm">Initializing camera...</p>
+                  </div>
+                ) : isScanning ? (
                   <>
                     <video
                       ref={videoRef}
@@ -278,7 +225,6 @@ const QRScannerModal = ({ isOpen, onClose, onScanSuccess }) => {
                       playsInline
                       muted
                       className="w-full h-full object-cover"
-                      style={{ transform: "scaleX(-1)" }}
                     />
                     {/* Scanning Overlay */}
                     <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
@@ -299,33 +245,40 @@ const QRScannerModal = ({ isOpen, onClose, onScanSuccess }) => {
                     {/* Scanning Instructions */}
                     <div className="absolute bottom-4 left-0 right-0 text-center pointer-events-none">
                       <p className="text-white text-sm bg-black/50 px-3 py-1 rounded-full inline-block">
-                        Align QR code within frame
+                        Scanning... (Auto-detect in 2 seconds)
                       </p>
                     </div>
                   </>
-                ) : permission === "denied" || error ? (
+                ) : error ? (
                   <div className="flex flex-col items-center justify-center h-full text-white p-4">
                     <AlertCircle className="w-16 h-16 text-red-400 mb-4" />
-                    <p className="text-center text-sm mb-4">
-                      {error || "Camera permission denied"}
-                    </p>
-                    <button
-                      onClick={handleRetry}
-                      className="px-4 py-2 bg-primary text-white rounded-lg text-sm hover:bg-primary/90 transition-colors"
-                    >
-                      Retry
-                    </button>
+                    <p className="text-center text-sm mb-4">{error}</p>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={handleRetry}
+                        className="px-4 py-2 bg-primary text-white rounded-lg text-sm hover:bg-primary/90 transition-colors flex items-center gap-2"
+                      >
+                        <RefreshCw className="w-4 h-4" />
+                        Retry
+                      </button>
+                      <button
+                        onClick={handleManualEntry}
+                        className="px-4 py-2 bg-secondary text-white rounded-lg text-sm hover:bg-secondary/90 transition-colors"
+                      >
+                        Manual Entry
+                      </button>
+                    </div>
                   </div>
                 ) : (
                   <div className="flex flex-col items-center justify-center h-full text-white">
-                    <Loader2 className="w-16 h-16 animate-spin mb-4" />
-                    <p className="text-sm">Requesting camera access...</p>
+                    <Camera className="w-16 h-16 mb-4" />
+                    <p className="text-sm">Camera ready</p>
                   </div>
                 )}
               </div>
 
               {/* Instructions */}
-              <div className="text-center space-y-2">
+              <div className="text-center space-y-3">
                 <p className="text-sm text-text-muted">
                   Position the QR code within the frame to scan
                 </p>
@@ -336,21 +289,17 @@ const QRScannerModal = ({ isOpen, onClose, onScanSuccess }) => {
                   </div>
                   <div className="flex items-center gap-1">
                     <Camera className="w-3 h-3 text-primary" />
-                    <span>Rear camera</span>
+                    <span>Camera</span>
                   </div>
                 </div>
-
+                
                 {/* Manual Entry Option */}
                 <div className="pt-2">
                   <button
-                    onClick={() => {
-                      // Simulate manual QR code entry
-                      const manualQR = mockQRCodes[0]; // Use first mock QR code
-                      handleScanSuccess(manualQR);
-                    }}
+                    onClick={handleManualEntry}
                     className="text-xs text-primary hover:text-primary/80 underline"
                   >
-                    Can't scan? Enter UPI ID manually
+                    Can't scan? Try manual entry
                   </button>
                 </div>
               </div>
@@ -386,26 +335,16 @@ const QRScannerModal = ({ isOpen, onClose, onScanSuccess }) => {
                               : "🏪"}
                     </div>
                     <div className="flex-1">
-                      <p className="font-medium text-text">{scanResult.name}</p>
-                      <p className="text-sm text-text-muted">
-                        {scanResult.upiId}
-                      </p>
+                      <p className="font-semibold text-text">{scanResult.name}</p>
+                      <p className="text-sm text-text-muted">{scanResult.upiId}</p>
+                      <p className="text-xs text-text-muted">{scanResult.phone}</p>
                     </div>
                   </div>
-
-                  {scanResult.phone && (
-                    <div className="flex items-center gap-2 text-sm text-text-muted">
-                      <span>Phone:</span>
-                      <span>{scanResult.phone}</span>
-                    </div>
-                  )}
-
+                  
                   {scanResult.amount && (
-                    <div className="flex items-center gap-2 text-sm">
-                      <span>Amount:</span>
-                      <span className="font-semibold text-primary">
-                        ₹{scanResult.amount}
-                      </span>
+                    <div className="bg-bg-elevated rounded-lg p-3">
+                      <p className="text-sm text-text-muted">Amount</p>
+                      <p className="text-lg font-semibold text-primary">₹{scanResult.amount}</p>
                     </div>
                   )}
                 </div>
@@ -414,7 +353,10 @@ const QRScannerModal = ({ isOpen, onClose, onScanSuccess }) => {
               {/* Action Buttons */}
               <div className="flex gap-3">
                 <button
-                  onClick={handleRetry}
+                  onClick={() => {
+                    setScanResult(null);
+                    startCamera();
+                  }}
                   className="flex-1 btn btn-secondary"
                 >
                   Scan Again

@@ -202,6 +202,8 @@ export const AuthProvider = ({ children }) => {
       const result = await firebaseAuth.signOut();
       if (result.success) {
         setUser(null);
+        // Redirect to main page instead of login page
+        window.location.href = "/";
       } else {
         setError(result.error);
       }

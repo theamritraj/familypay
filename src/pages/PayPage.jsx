@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate, useLocation } from "react-router-dom";
 import paymentService from "../services/paymentService";
-import BottomNav from "../components/BottomNav";
+import QRScannerModal from "../components/QRScannerModalLive";
+import UPIPaymentModal from "../components/UPIPaymentModal";
 import {
   QrCode,
   CreditCard,
@@ -48,6 +49,7 @@ const PayPage = () => {
   const [recentPayments, setRecentPayments] = useState([]);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
+  const [showUPIPaymentModal, setShowUPIPaymentModal] = useState(false);
   const [paymentData, setPaymentData] = useState({
     amount: "",
     upiId: "",
@@ -129,6 +131,31 @@ const PayPage = () => {
       upiId: merchant.upiId,
       recipientName: merchant.name,
     });
+  };
+
+  const handleUPIPayment = () => {
+    if (!paymentData.amount || !paymentData.upiId) {
+      alert("Please fill in all required fields");
+      return;
+    }
+    setShowUPIPaymentModal(true);
+  };
+
+  const handlePaymentComplete = (result) => {
+    setShowUPIPaymentModal(false);
+    if (result.success) {
+      alert(
+        `Payment successful via ${result.app}! Transaction ID: ${result.transactionId}`,
+      );
+      setPaymentData({
+        amount: "",
+        upiId: "",
+        description: "",
+        recipientName: "",
+        paymentMethod: "upi",
+      });
+      loadRecentPayments();
+    }
   };
 
   const handlePayment = async (method) => {
@@ -421,14 +448,14 @@ const PayPage = () => {
                   </div>
 
                   <button
-                    onClick={() => handlePayment("quick")}
+                    onClick={handleUPIPayment}
                     disabled={loading || !paymentData.upiId}
                     className="w-full btn btn-primary text-lg py-4"
                   >
                     {loading ? (
                       <div className="loading-spinner mx-auto"></div>
                     ) : (
-                      `Pay ₹${paymentData.amount}`
+                      `Continue to Pay ₹${paymentData.amount}`
                     )}
                   </button>
                 </div>
@@ -496,7 +523,7 @@ const PayPage = () => {
                 </div>
 
                 <button
-                  onClick={() => handlePayment("upi")}
+                  onClick={handleUPIPayment}
                   disabled={
                     loading || !paymentData.amount || !paymentData.upiId
                   }
@@ -505,7 +532,7 @@ const PayPage = () => {
                   {loading ? (
                     <div className="loading-spinner mx-auto"></div>
                   ) : (
-                    `Pay ₹${paymentData.amount || "0"}`
+                    `Continue to Pay ₹${paymentData.amount || "0"}`
                   )}
                 </button>
               </div>
@@ -675,6 +702,17 @@ const PayPage = () => {
 
       {/* Mobile Bottom Navigation */}
       <BottomNav userRole={user?.role} />
+
+      {/* UPI Payment Modal */}
+      <UPIPaymentModal
+        isOpen={showUPIPaymentModal}
+        onClose={() => setShowUPIPaymentModal(false)}
+        paymentData={{
+          ...paymentData,
+          name: paymentData.recipientName,
+        }}
+        onPaymentComplete={handlePaymentComplete}
+      />
     </div>
   );
 };
