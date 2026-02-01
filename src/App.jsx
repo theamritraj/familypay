@@ -8,6 +8,7 @@ import { AuthProvider, useAuth } from "./context/AuthContext";
 import Login from "./pages/Login";
 import ForgotPassword from "./pages/ForgotPassword";
 import Register from "./pages/Register";
+import HomePage from "./pages/HomePage";
 import PrimaryDashboard from "./pages/PrimaryDashboard";
 import SecondaryDashboard from "./pages/SecondaryDashboard";
 import RealtimeDashboard from "./pages/RealtimeDashboard";
@@ -24,7 +25,7 @@ const ProtectedRoute = ({ children }) => {
   if (loading) {
     return (
       <div className="loading-container">
-        <div className="loading-spinner">Loading...</div>
+        <div className="loading-spinner"></div>
       </div>
     );
   }
@@ -32,26 +33,27 @@ const ProtectedRoute = ({ children }) => {
   return isAuthenticated ? children : <Navigate to="/login" replace />;
 };
 
-// Public Route component (redirect to dashboard if already authenticated)
+// Public Route component (redirect to dashboard if authenticated)
 const PublicRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
 
   if (loading) {
     return (
       <div className="loading-container">
-        <div className="loading-spinner">Loading...</div>
+        <div className="loading-spinner"></div>
       </div>
     );
   }
 
-  return isAuthenticated ? <Navigate to="/dashboard" replace /> : children;
+  return !isAuthenticated ? children : <Navigate to="/dashboard" replace />;
 };
 
-const AppRoutes = () => {
+function AppRoutes() {
   const { user } = useAuth();
 
   return (
     <Routes>
+      <Route path="/" element={<HomePage />} />
       <Route
         path="/login"
         element={
@@ -91,42 +93,10 @@ const AppRoutes = () => {
         }
       />
       <Route
-        path="/dashboard/primary"
-        element={
-          <ProtectedRoute>
-            <PrimaryDashboard />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/dashboard/secondary"
-        element={
-          <ProtectedRoute>
-            <SecondaryDashboard />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/dashboard/realtime"
-        element={
-          <ProtectedRoute>
-            <RealtimeDashboard />
-          </ProtectedRoute>
-        }
-      />
-      <Route
         path="/dashboard/profile"
         element={
           <ProtectedRoute>
             <ProfilePage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/dashboard/test"
-        element={
-          <ProtectedRoute>
-            <TestPage />
           </ProtectedRoute>
         }
       />
@@ -146,17 +116,27 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
+      <Route
+        path="/dashboard/test"
+        element={
+          <ProtectedRoute>
+            <TestPage />
+          </ProtectedRoute>
+        }
+      />
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
   );
-};
+}
 
 function App() {
   return (
     <Router>
       <AuthProvider>
-        <AppRoutes />
+        <div className="App">
+          <AppRoutes />
+        </div>
       </AuthProvider>
     </Router>
   );

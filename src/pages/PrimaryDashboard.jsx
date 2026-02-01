@@ -790,14 +790,18 @@ const PrimaryDashboard = () => {
                     className="flex items-center justify-between"
                   >
                     <div className="flex items-center gap-3">
-                      <div className={`w-3 h-3 rounded-full ${item.color}`} />
+                      <img
+                        src="/logo.jpeg"
+                        alt="FamilyPay"
+                        className="w-10 h-10 rounded-lg"
+                      />
                       <div>
-                        <div className="text-sm font-medium text-text">
-                          {item.category}
-                        </div>
-                        <div className="text-xs text-text-muted">
-                          ₹{item.amount.toLocaleString()}
-                        </div>
+                        <h1 className="text-xl sm:text-2xl font-bold text-text">
+                          FamilyPay Admin
+                        </h1>
+                        <p className="text-sm text-text-muted">
+                          Manage your family circle efficiently
+                        </p>
                       </div>
                     </div>
                     <div className="text-right">

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import paymentService from "../services/paymentService";
 import BottomNav from "../components/BottomNav";
 import {
@@ -18,21 +18,36 @@ import {
   User,
   Calendar,
   ArrowLeft,
+  Send,
+  Users,
+  Phone,
+  Mail,
 } from "lucide-react";
 
 const PayPage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   console.log("PayPage rendering, user:", user); // Debug log
 
   const [activeTab, setActiveTab] = useState("quick");
   const [loading, setLoading] = useState(false);
-  const [showScanner, setShowScanner] = useState(false);
-  const [showSuccess, setShowSuccess] = useState(false);
+  const [selectedContact, setSelectedContact] = useState(
+    location.state?.selectedContact || null,
+  );
+  const [recipient, setRecipient] = useState(selectedContact?.name || "");
+  const [recipientPhone, setRecipientPhone] = useState(
+    selectedContact?.phone || "",
+  );
+  const [amount, setAmount] = useState(
+    selectedContact?.preselectedAmount?.toString() || "",
+  );
+  const [description, setDescription] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState("upi");
   const [recentPayments, setRecentPayments] = useState([]);
-  const [frequentRecipients, setFrequentRecipients] = useState([]);
-
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
   const [paymentData, setPaymentData] = useState({
     amount: "",
     upiId: "",
@@ -205,23 +220,76 @@ const PayPage = () => {
       <header className="bg-bg-card border-b border-border px-4 py-4 sm:px-6 sm:py-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <button
-              onClick={() => navigate("/dashboard")}
-              className="p-2 hover:bg-bg-elevated rounded-lg transition-colors"
-            >
-              <ArrowLeft className="w-5 h-5 text-text" />
-            </button>
-            <h1 className="text-xl sm:text-2xl font-bold text-text">
-              Make Payment
-            </h1>
+            <img
+              src="/logo.jpeg"
+              alt="FamilyPay"
+              className="w-10 h-10 rounded-lg"
+            />
+            <h1 className="text-xl sm:text-2xl font-bold text-text">Pay</h1>
           </div>
-          <div className="text-sm text-text-muted">
+          <div className="text-sm font-medium text-text">
             Balance: ₹{(user.balance || 10000).toLocaleString()}
           </div>
         </div>
       </header>
 
       <div className="px-4 py-4 sm:px-6 sm:py-6">
+        {/* Selected Contact Display */}
+        {selectedContact && (
+          <div className="card mb-6 border-2 border-primary/20 bg-primary/5">
+            <div className="flex items-center gap-3 p-4">
+              <div className="w-12 h-12 bg-bg-elevated rounded-full flex items-center justify-center text-2xl border-2 border-border">
+                {selectedContact.avatar || "👤"}
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <p className="font-medium text-text">
+                    {selectedContact.name}
+                  </p>
+                  {selectedContact.isFamily && (
+                    <span className="bg-primary/10 text-primary text-xs px-2 py-0.5 rounded-full">
+                      Family
+                    </span>
+                  )}
+                  {selectedContact.upiId && (
+                    <span className="bg-success/10 text-success text-xs px-2 py-0.5 rounded-full">
+                      QR Scanned
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center gap-2 text-xs text-text-muted">
+                  <Phone className="w-3 h-3" />
+                  <span>{selectedContact.phone}</span>
+                </div>
+                {selectedContact.upiId && (
+                  <div className="flex items-center gap-2 text-xs text-text-muted">
+                    <Mail className="w-3 h-3" />
+                    <span>{selectedContact.upiId}</span>
+                  </div>
+                )}
+                {selectedContact.preselectedAmount && (
+                  <div className="flex items-center gap-2 text-xs text-primary">
+                    <span>
+                      Pre-filled amount: ₹{selectedContact.preselectedAmount}
+                    </span>
+                  </div>
+                )}
+              </div>
+              <button
+                onClick={() => {
+                  setSelectedContact(null);
+                  setRecipient("");
+                  setRecipientPhone("");
+                  setAmount("");
+                }}
+                className="p-2 hover:bg-bg-elevated rounded-lg transition-colors"
+              >
+                <X className="w-4 h-4 text-text-muted" />
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Tab Navigation */}
         <div className="flex gap-2 overflow-x-auto pb-4 mb-6">
           {tabs.map((tab) => {

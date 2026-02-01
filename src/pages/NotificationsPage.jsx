@@ -272,22 +272,19 @@ const NotificationsPage = () => {
       <header className="bg-bg-card border-b border-border px-4 py-3 sm:px-6 sm:py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <button
-              onClick={() => navigate("/dashboard")}
-              className="p-2 hover:bg-bg-elevated rounded-lg transition-colors"
-            >
-              <ArrowLeft className="w-5 h-5 text-text" />
-            </button>
-            <div className="flex items-center gap-2">
-              <h1 className="text-lg sm:text-xl font-bold text-text">
-                Notifications
-              </h1>
-              {unreadCount > 0 && (
-                <span className="bg-danger text-white text-xs px-2 py-0.5 rounded-full min-w-[20px] text-center">
-                  {unreadCount}
-                </span>
-              )}
-            </div>
+            <img
+              src="/logo.jpeg"
+              alt="FamilyPay"
+              className="w-10 h-10 rounded-lg"
+            />
+            <h1 className="text-lg sm:text-xl font-bold text-text">
+              Notifications
+            </h1>
+            {unreadCount > 0 && (
+              <span className="bg-danger text-white text-xs px-2 py-0.5 rounded-full min-w-[20px] text-center">
+                {unreadCount}
+              </span>
+            )}
           </div>
           <div className="flex items-center gap-2">
             <span className="text-xs text-text-muted hidden sm:inline">

@@ -157,12 +157,15 @@ const ProfilePage = () => {
       {/* Header */}
       <header className="bg-bg-card border-b border-border px-4 py-4 sm:px-6 sm:py-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-xl sm:text-2xl font-bold text-text">Profile</h1>
-          <button
-            onClick={handleLogout}
-            className="btn btn-danger btn-sm flex items-center gap-2"
-          >
-            <LogOut className="w-4 h-4" />
+          <div className="flex items-center gap-3">
+            <img
+              src="/logo.jpeg"
+              alt="FamilyPay"
+              className="w-10 h-10 rounded-lg"
+            />
+            <h1 className="text-xl sm:text-2xl font-bold text-text">Profile</h1>
+          </div>
+          <button onClick={logout} className="btn btn-danger btn-sm">
             Logout
           </button>
         </div>
@@ -396,14 +399,18 @@ const ProfilePage = () => {
                       className="w-full flex items-center justify-between p-4 bg-bg-elevated rounded-lg hover:border-primary transition-colors"
                     >
                       <div className="flex items-center gap-3">
-                        <Lock className="w-5 h-5 text-text-muted" />
-                        <div className="text-left">
-                          <div className="font-medium text-text">
-                            Change Password
-                          </div>
-                          <div className="text-sm text-text-muted">
-                            Update your account password
-                          </div>
+                        <img
+                          src="/logo.jpeg"
+                          alt="FamilyPay"
+                          className="w-10 h-10 rounded-lg"
+                        />
+                        <div>
+                          <h1 className="text-xl sm:text-2xl font-bold text-text">
+                            Profile Settings
+                          </h1>
+                          <p className="text-sm text-text-muted">
+                            Manage your account and preferences
+                          </p>
                         </div>
                       </div>
                       <ChevronRight className="w-5 h-5 text-text-muted" />

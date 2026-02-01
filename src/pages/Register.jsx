@@ -70,11 +70,13 @@ const Register = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-bg to-bg-elevated p-4">
       <div className="w-full max-w-md bg-bg-card border border-border rounded-default p-8 shadow-xl animate-fade-in">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent mb-2">
-            My Family Pay
-          </h1>
-          <p className="text-text-muted text-sm">Create your account</p>
+        <div className="flex items-center justify-center mb-8">
+          <img
+            src="/logo.jpeg"
+            alt="FamilyPay"
+            className="w-12 h-12 rounded-lg mr-3"
+          />
+          <h1 className="text-2xl font-bold text-text">FamilyPay</h1>
         </div>
 
         {error && <div className="alert alert-error">{error}</div>}

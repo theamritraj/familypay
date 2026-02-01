@@ -171,18 +171,13 @@ const Login = () => {
       <div className="w-full max-w-md">
         <div className="bg-bg-card rounded-2xl shadow-xl border border-border p-8">
           {/* Header */}
-          <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-gradient-to-r from-primary to-secondary rounded-full flex items-center justify-center mx-auto mb-4">
-              <span className="text-2xl font-bold text-white">FP</span>
-            </div>
-            <h1 className="text-2xl font-bold text-text mb-2">
-              {isLogin ? "Welcome Back" : "Join Family Pay"}
-            </h1>
-            <p className="text-text-muted">
-              {isLogin
-                ? "Sign in to manage your family payments"
-                : "Create an account to get started"}
-            </p>
+          <div className="flex items-center justify-center mb-8">
+            <img
+              src="/logo.jpeg"
+              alt="FamilyPay"
+              className="w-12 h-12 rounded-lg mr-3"
+            />
+            <h1 className="text-2xl font-bold text-text">FamilyPay</h1>
           </div>
 
           {/* Success Message */}
