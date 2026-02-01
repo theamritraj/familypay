@@ -1,0 +1,85 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom base styles */
+@layer base {
+  html {
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+  
+  body {
+    @apply bg-bg text-text;
+  }
+}
+
+/* Custom component styles */
+@layer components {
+  .btn {
+    @apply px-4 py-2 rounded-default font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/50;
+  }
+  
+  .btn-primary {
+    @apply bg-primary hover:bg-primary-dark text-white;
+  }
+  
+  .btn-secondary {
+    @apply bg-secondary hover:bg-secondary/80 text-white;
+  }
+  
+  .btn-danger {
+    @apply bg-danger hover:bg-danger/80 text-white;
+  }
+  
+  .btn-success {
+    @apply bg-success hover:bg-success/80 text-white;
+  }
+  
+  .form-input {
+    @apply w-full px-3 py-2 bg-bg-card border border-border rounded-default text-text placeholder-text-muted focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/50;
+  }
+  
+  .form-select {
+    @apply w-full px-3 py-2 bg-bg-card border border-border rounded-default text-text focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/50;
+  }
+  
+  .form-checkbox {
+    @apply w-4 h-4 text-primary bg-bg-card border border-border rounded focus:ring-primary focus:ring-2;
+  }
+  
+  .form-label {
+    @apply block text-sm font-medium text-text mb-1;
+  }
+  
+  .alert {
+    @apply p-3 rounded-default mb-4;
+  }
+  
+  .alert-error {
+    @apply bg-danger/10 border border-danger/30 text-danger;
+  }
+  
+  .alert-success {
+    @apply bg-success/10 border border-success/30 text-success;
+  }
+  
+  .alert-warning {
+    @apply bg-warning/10 border border-warning/30 text-warning;
+  }
+  
+  .card {
+    @apply bg-bg-card border border-border rounded-default p-6;
+  }
+  
+  .link {
+    @apply text-primary hover:text-primary-light underline;
+  }
+  
+  .loading-container {
+    @apply flex items-center justify-center min-h-screen;
+  }
+  
+  .loading-spinner {
+    @apply animate-spin rounded-full h-8 w-8 border-b-2 border-primary;
+  }
+}
