@@ -15,6 +15,8 @@ import RealtimeDashboard from "./pages/RealtimeDashboard";
 import ProfilePage from "./pages/ProfilePage";
 import PayPage from "./pages/PayPage";
 import NotificationsPage from "./pages/NotificationsPage";
+import TransactionsPage from "./pages/TransactionsPage";
+import FamilyMembersPage from "./pages/FamilyMembersPage";
 import TestPage from "./pages/TestPage";
 import "./index.css";
 
@@ -113,6 +115,22 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <NotificationsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/dashboard/transactions"
+        element={
+          <ProtectedRoute>
+            <TransactionsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/dashboard/members"
+        element={
+          <ProtectedRoute>
+            <FamilyMembersPage />
           </ProtectedRoute>
         }
       />

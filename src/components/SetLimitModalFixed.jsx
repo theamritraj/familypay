@@ -101,33 +101,3 @@ const SetLimitModal = ({ member, onClose, onSetLimit }) => {
 };
 
 export default SetLimitModal;
-                        />
-                        <p className="text-muted text-sm mt-1">
-                            Current spending: ₹{member.currentMonthlySpent}
-                        </p>
-                    </div>
-
-                    <div className="modal-footer">
-                        <button
-                            type="button"
-                            className="btn btn-secondary"
-                            onClick={onClose}
-                            disabled={loading}
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            type="submit"
-                            className="btn btn-primary"
-                            disabled={loading}
-                        >
-                            {loading ? 'Updating...' : 'Update Limits'}
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    );
-};
-
-export default SetLimitModal;

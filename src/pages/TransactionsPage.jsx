@@ -28,114 +28,121 @@ const TransactionsPage = () => {
   const [showFilters, setShowFilters] = useState(false);
 
   // Mock transactions data
-  const mockTransactions = [
-    {
-      id: 1,
-      type: "sent",
-      amount: 500,
-      description: "Payment to Mom",
-      recipient: "Mom",
-      recipientPhone: "+91 98765 43210",
-      date: new Date(Date.now() - 1000 * 60 * 30), // 30 minutes ago
-      status: "completed",
-      method: "upi",
-      category: "family",
-    },
-    {
-      id: 2,
-      type: "received",
-      amount: 1000,
-      description: "Salary credit",
-      sender: "Company XYZ",
-      date: new Date(Date.now() - 1000 * 60 * 60 * 2), // 2 hours ago
-      status: "completed",
-      method: "bank",
-      category: "income",
-    },
-    {
-      id: 3,
-      type: "sent",
-      amount: 250,
-      description: "Grocery shopping",
-      recipient: "Grocery Store",
-      date: new Date(Date.now() - 1000 * 60 * 60 * 24), // 1 day ago
-      status: "completed",
-      method: "qr",
-      category: "shopping",
-    },
-    {
-      id: 4,
-      type: "sent",
-      amount: 1500,
-      description: "Electric bill payment",
-      recipient: "Electric Board",
-      date: new Date(Date.now() - 1000 * 60 * 60 * 48), // 2 days ago
-      status: "completed",
-      method: "upi",
-      category: "bills",
-    },
-    {
-      id: 5,
-      type: "pending",
-      amount: 750,
-      description: "Online shopping",
-      recipient: "Amazon",
-      date: new Date(Date.now() - 1000 * 60 * 60 * 72), // 3 days ago
-      status: "pending",
-      method: "card",
-      category: "shopping",
-    },
-    {
-      id: 6,
-      type: "received",
-      amount: 2000,
-      description: "Freelance payment",
-      sender: "Client ABC",
-      date: new Date(Date.now() - 1000 * 60 * 60 * 120), // 5 days ago
-      status: "completed",
-      method: "upi",
-      category: "income",
-    },
-    {
-      id: 7,
-      type: "sent",
-      amount: 300,
-      description: "Mobile recharge",
-      recipient: "Mobile Operator",
-      date: new Date(Date.now() - 1000 * 60 * 60 * 168), // 7 days ago
-      status: "completed",
-      method: "upi",
-      category: "utilities",
-    },
-    {
-      id: 8,
-      type: "failed",
-      amount: 1000,
-      description: "Failed transaction",
-      recipient: "Merchant",
-      date: new Date(Date.now() - 1000 * 60 * 60 * 200), // 8 days ago
-      status: "failed",
-      method: "upi",
-      category: "other",
-    },
-  ];
+  const getMockTransactions = () => {
+    const now = Date.now();
+    return [
+      {
+        id: 1,
+        type: "sent",
+        amount: 500,
+        description: "Payment to Mom",
+        recipient: "Mom",
+        recipientPhone: "+91 98765 43210",
+        date: new Date(now - 1000 * 60 * 30), // 30 minutes ago
+        status: "completed",
+        method: "upi",
+        category: "family",
+      },
+      {
+        id: 2,
+        type: "received",
+        amount: 1000,
+        description: "Salary credit",
+        sender: "Company XYZ",
+        date: new Date(now - 1000 * 60 * 60 * 2), // 2 hours ago
+        status: "completed",
+        method: "bank",
+        category: "income",
+      },
+      {
+        id: 3,
+        type: "sent",
+        amount: 250,
+        description: "Grocery shopping",
+        recipient: "Grocery Store",
+        date: new Date(now - 1000 * 60 * 60 * 24), // 1 day ago
+        status: "completed",
+        method: "qr",
+        category: "shopping",
+      },
+      {
+        id: 4,
+        type: "sent",
+        amount: 1500,
+        description: "Electric bill payment",
+        recipient: "Electric Board",
+        date: new Date(now - 1000 * 60 * 60 * 48), // 2 days ago
+        status: "completed",
+        method: "upi",
+        category: "bills",
+      },
+      {
+        id: 5,
+        type: "pending",
+        amount: 750,
+        description: "Online shopping",
+        recipient: "Amazon",
+        date: new Date(now - 1000 * 60 * 60 * 72), // 3 days ago
+        status: "pending",
+        method: "card",
+        category: "shopping",
+      },
+      {
+        id: 6,
+        type: "received",
+        amount: 2000,
+        description: "Freelance payment",
+        sender: "Client ABC",
+        date: new Date(now - 1000 * 60 * 60 * 120), // 5 days ago
+        status: "completed",
+        method: "upi",
+        category: "income",
+      },
+      {
+        id: 7,
+        type: "sent",
+        amount: 300,
+        description: "Mobile recharge",
+        recipient: "Mobile Operator",
+        date: new Date(now - 1000 * 60 * 60 * 168), // 7 days ago
+        status: "completed",
+        method: "upi",
+        category: "utilities",
+      },
+      {
+        id: 8,
+        type: "failed",
+        amount: 1000,
+        description: "Failed transaction",
+        recipient: "Merchant",
+        date: new Date(now - 1000 * 60 * 60 * 200), // 8 days ago
+        status: "failed",
+        method: "upi",
+        category: "other",
+      },
+    ];
+  };
 
   useEffect(() => {
     // Simulate loading transactions
     setTimeout(() => {
-      setTransactions(mockTransactions);
+      setTransactions(getMockTransactions());
       setLoading(false);
     }, 1000);
   }, []);
 
   const filteredTransactions = transactions.filter((transaction) => {
-    const matchesSearch = 
-      transaction.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      transaction.recipient?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    const matchesSearch =
+      transaction.description
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase()) ||
+      transaction.recipient
+        ?.toLowerCase()
+        .includes(searchQuery.toLowerCase()) ||
       transaction.sender?.toLowerCase().includes(searchQuery.toLowerCase());
 
     const matchesType = filterType === "all" || transaction.type === filterType;
-    
+
     return matchesSearch && matchesType;
   });
 
@@ -200,8 +207,14 @@ const TransactionsPage = () => {
       <header className="bg-bg-card border-b border-border px-4 py-4 sm:px-6 sm:py-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src="/logo.jpeg" alt="FamilyPay" className="w-10 h-10 rounded-lg" />
-            <h1 className="text-xl sm:text-2xl font-bold text-text">Transactions</h1>
+            <img
+              src="/logo.jpeg"
+              alt="FamilyPay"
+              className="w-10 h-10 rounded-lg"
+            />
+            <h1 className="text-xl sm:text-2xl font-bold text-text">
+              Transactions
+            </h1>
           </div>
           <div className="flex items-center gap-2">
             <button
@@ -273,7 +286,9 @@ const TransactionsPage = () => {
           {filteredTransactions.length === 0 ? (
             <div className="text-center py-12">
               <CreditCard className="w-12 h-12 text-text-muted mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-text mb-2">No transactions found</h3>
+              <h3 className="text-lg font-semibold text-text mb-2">
+                No transactions found
+              </h3>
               <p className="text-text-muted">
                 Try adjusting your search or filters
               </p>
@@ -295,8 +310,8 @@ const TransactionsPage = () => {
                           {transaction.type === "sent"
                             ? `To: ${transaction.recipient}`
                             : transaction.type === "received"
-                            ? `From: ${transaction.sender}`
-                            : transaction.description}
+                              ? `From: ${transaction.sender}`
+                              : transaction.description}
                         </p>
                         {getStatusIcon(transaction.status)}
                       </div>
@@ -320,12 +335,12 @@ const TransactionsPage = () => {
                         transaction.type === "sent"
                           ? "text-danger"
                           : transaction.type === "received"
-                          ? "text-success"
-                          : "text-text"
+                            ? "text-success"
+                            : "text-text"
                       }`}
                     >
-                      {transaction.type === "sent" ? "-" : "+"}
-                      ₹{transaction.amount.toLocaleString()}
+                      {transaction.type === "sent" ? "-" : "+"}₹
+                      {transaction.amount.toLocaleString()}
                     </p>
                     <p className="text-xs text-text-muted capitalize">
                       {transaction.status}
@@ -342,7 +357,8 @@ const TransactionsPage = () => {
           <div className="card p-4 text-center">
             <p className="text-sm text-text-muted mb-1">Total Sent</p>
             <p className="text-lg font-semibold text-danger">
-              ₹{transactions
+              ₹
+              {transactions
                 .filter((t) => t.type === "sent")
                 .reduce((sum, t) => sum + t.amount, 0)
                 .toLocaleString()}
@@ -351,7 +367,8 @@ const TransactionsPage = () => {
           <div className="card p-4 text-center">
             <p className="text-sm text-text-muted mb-1">Total Received</p>
             <p className="text-lg font-semibold text-success">
-              ₹{transactions
+              ₹
+              {transactions
                 .filter((t) => t.type === "received")
                 .reduce((sum, t) => sum + t.amount, 0)
                 .toLocaleString()}
@@ -360,7 +377,8 @@ const TransactionsPage = () => {
           <div className="card p-4 text-center">
             <p className="text-sm text-text-muted mb-1">Net Balance</p>
             <p className="text-lg font-semibold text-text">
-              ₹{(
+              ₹
+              {(
                 transactions
                   .filter((t) => t.type === "received")
                   .reduce((sum, t) => sum + t.amount, 0) -

@@ -28,8 +28,8 @@ const AdminSidebar = ({ isOpen, toggleSidebar }) => {
     {
       title: "Dashboard",
       icon: LayoutDashboard,
-      path: "/dashboard/primary",
-      active: location.pathname === "/dashboard/primary",
+      path: "/dashboard",
+      active: location.pathname === "/dashboard",
     },
     {
       title: "Family Members",
