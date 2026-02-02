@@ -9,6 +9,11 @@ import Login from "./pages/Login";
 import ForgotPassword from "./pages/ForgotPassword";
 import Register from "./pages/Register";
 import HomePage from "./pages/HomePage";
+import AboutPage from "./pages/AboutPage";
+import BlogPage from "./pages/BlogPage";
+import BlogPostPage from "./pages/BlogPostPage";
+import CareersPage from "./pages/CareersPage";
+import ContactPage from "./pages/ContactPage";
 import PrimaryDashboard from "./pages/PrimaryDashboard";
 import SecondaryDashboard from "./pages/SecondaryDashboard";
 import RealtimeDashboard from "./pages/RealtimeDashboard";
@@ -56,6 +61,11 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/" element={<HomePage />} />
+      <Route path="/about" element={<AboutPage />} />
+      <Route path="/blog" element={<BlogPage />} />
+      <Route path="/blog/:postId" element={<BlogPostPage />} />
+      <Route path="/careers" element={<CareersPage />} />
+      <Route path="/contact" element={<ContactPage />} />
       <Route
         path="/login"
         element={

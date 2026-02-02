@@ -25,6 +25,13 @@ import {
   PiggyBank,
   Target,
   Award,
+  Menu,
+  X,
+  Clock,
+  Users2,
+  ShieldCheck,
+  Sparkles,
+  ArrowDown,
 } from "lucide-react";
 
 const HomePage = () => {
@@ -33,6 +40,8 @@ const HomePage = () => {
   const [activeTab, setActiveTab] = useState("personal");
   const [email, setEmail] = useState("");
   const [isSubscribed, setIsSubscribed] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
   // Mock statistics
   const stats = {
@@ -166,10 +175,34 @@ const HomePage = () => {
     }
   };
 
+  // Handle scroll effect for navigation
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 50);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // Smooth scroll to section
+  const scrollToSection = (sectionId) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth" });
+      setMobileMenuOpen(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-bg">
       {/* Navigation */}
-      <nav className="fixed top-0 w-full bg-bg/95 backdrop-blur-sm border-b border-border z-50">
+      <nav
+        className={`fixed top-0 w-full transition-all duration-300 z-50 ${
+          scrolled
+            ? "bg-bg/95 backdrop-blur-sm border-b border-border"
+            : "bg-bg/80 backdrop-blur-sm"
+        }`}
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center gap-8">
@@ -182,145 +215,301 @@ const HomePage = () => {
                 <span className="text-xl font-bold text-text">FamilyPay</span>
               </div>
 
+              {/* Desktop Navigation */}
               <div className="hidden md:flex items-center gap-6">
-                <a
-                  href="#features"
+                <button
+                  onClick={() => scrollToSection("features")}
                   className="text-text-muted hover:text-text transition-colors"
                 >
                   Features
-                </a>
-                <a
-                  href="#how-it-works"
+                </button>
+                <button
+                  onClick={() => scrollToSection("how-it-works")}
                   className="text-text-muted hover:text-text transition-colors"
                 >
                   How it Works
-                </a>
-                <a
-                  href="#pricing"
+                </button>
+                <button
+                  onClick={() => scrollToSection("pricing")}
                   className="text-text-muted hover:text-text transition-colors"
                 >
                   Pricing
-                </a>
-                <a
-                  href="#testimonials"
+                </button>
+                <button
+                  onClick={() => scrollToSection("testimonials")}
                   className="text-text-muted hover:text-text transition-colors"
                 >
                   Reviews
-                </a>
+                </button>
+                <button
+                  onClick={() => navigate("/about")}
+                  className="text-text-muted hover:text-text transition-colors"
+                >
+                  About
+                </button>
+                <button
+                  onClick={() => navigate("/blog")}
+                  className="text-text-muted hover:text-text transition-colors"
+                >
+                  Blog
+                </button>
+                <button
+                  onClick={() => navigate("/careers")}
+                  className="text-text-muted hover:text-text transition-colors"
+                >
+                  Careers
+                </button>
+                <button
+                  onClick={() => navigate("/contact")}
+                  className="text-text-muted hover:text-text transition-colors"
+                >
+                  Contact
+                </button>
               </div>
             </div>
 
             <div className="flex items-center gap-4">
-              {isAuthenticated ? (
-                <button
-                  onClick={() => navigate("/dashboard")}
-                  className="btn btn-primary"
-                >
-                  Dashboard
-                </button>
-              ) : (
-                <>
+              {/* Desktop Auth Buttons */}
+              <div className="hidden md:flex items-center gap-4">
+                {isAuthenticated ? (
                   <button
-                    onClick={() => navigate("/login")}
-                    className="btn btn-secondary"
-                  >
-                    Login
-                  </button>
-                  <button
-                    onClick={() => navigate("/register")}
+                    onClick={() => navigate("/dashboard")}
                     className="btn btn-primary"
                   >
-                    Sign Up
+                    Dashboard
                   </button>
-                </>
-              )}
+                ) : (
+                  <>
+                    <button
+                      onClick={() => navigate("/login")}
+                      className="btn btn-secondary"
+                    >
+                      Login
+                    </button>
+                    <button
+                      onClick={() => navigate("/register")}
+                      className="btn btn-primary"
+                    >
+                      Sign Up
+                    </button>
+                  </>
+                )}
+              </div>
+
+              {/* Mobile Menu Button */}
+              <button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="md:hidden p-2 rounded-lg hover:bg-bg-elevated transition-colors"
+              >
+                {mobileMenuOpen ? (
+                  <X className="w-6 h-6 text-text" />
+                ) : (
+                  <Menu className="w-6 h-6 text-text" />
+                )}
+              </button>
             </div>
           </div>
+
+          {/* Mobile Menu */}
+          {mobileMenuOpen && (
+            <div className="md:hidden border-t border-border bg-bg/95 backdrop-blur-sm">
+              <div className="px-4 py-4 space-y-3">
+                <button
+                  onClick={() => scrollToSection("features")}
+                  className="block w-full text-left text-text-muted hover:text-text transition-colors py-2"
+                >
+                  Features
+                </button>
+                <button
+                  onClick={() => scrollToSection("how-it-works")}
+                  className="block w-full text-left text-text-muted hover:text-text transition-colors py-2"
+                >
+                  How it Works
+                </button>
+                <button
+                  onClick={() => scrollToSection("pricing")}
+                  className="block w-full text-left text-text-muted hover:text-text transition-colors py-2"
+                >
+                  Pricing
+                </button>
+                <button
+                  onClick={() => scrollToSection("testimonials")}
+                  className="block w-full text-left text-text-muted hover:text-text transition-colors py-2"
+                >
+                  Reviews
+                </button>
+                <button
+                  onClick={() => navigate("/about")}
+                  className="block w-full text-left text-text-muted hover:text-text transition-colors py-2"
+                >
+                  About
+                </button>
+                <button
+                  onClick={() => navigate("/blog")}
+                  className="block w-full text-left text-text-muted hover:text-text transition-colors py-2"
+                >
+                  Blog
+                </button>
+                <button
+                  onClick={() => navigate("/careers")}
+                  className="block w-full text-left text-text-muted hover:text-text transition-colors py-2"
+                >
+                  Careers
+                </button>
+                <button
+                  onClick={() => navigate("/contact")}
+                  className="block w-full text-left text-text-muted hover:text-text transition-colors py-2"
+                >
+                  Contact
+                </button>
+                <div className="border-t border-border pt-4 space-y-3">
+                  {isAuthenticated ? (
+                    <button
+                      onClick={() => navigate("/dashboard")}
+                      className="w-full btn btn-primary"
+                    >
+                      Dashboard
+                    </button>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => navigate("/login")}
+                        className="w-full btn btn-secondary"
+                      >
+                        Login
+                      </button>
+                      <button
+                        onClick={() => navigate("/register")}
+                        className="w-full btn btn-primary"
+                      >
+                        Sign Up
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </nav>
 
       {/* Hero Section */}
-      <section className="pt-24 pb-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12">
-            <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium mb-6">
-              <Zap className="w-4 h-4" />
+      <section
+        id="hero"
+        className="pt-24 pb-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden"
+      >
+        {/* Background Elements */}
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-secondary/5"></div>
+        <div className="absolute top-20 left-10 w-72 h-72 bg-primary/10 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-secondary/10 rounded-full blur-3xl"></div>
+
+        <div className="max-w-7xl mx-auto relative">
+          <div className="text-center mb-16">
+            {/* Trust Badge */}
+            <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium mb-8 animate-fade-in">
+              <Sparkles className="w-4 h-4" />
               Trusted by 2.5M+ families worldwide
             </div>
 
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-text mb-6">
+            {/* Main Headline */}
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold text-text mb-6 leading-tight">
               Manage Your Family's
               <span className="text-primary"> Finances</span> Together
             </h1>
 
-            <p className="text-xl text-text-muted max-w-3xl mx-auto mb-8">
+            {/* Subheadline */}
+            <p className="text-xl text-text-muted max-w-4xl mx-auto mb-12 leading-relaxed">
               The modern way to handle family expenses, split bills, and track
               spending. Join millions of families who trust FamilyPay for their
               financial needs.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            {/* CTA Buttons */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
               <button
                 onClick={handleGetStarted}
-                className="btn btn-primary btn-lg flex items-center gap-2"
+                className="btn btn-primary btn-lg flex items-center gap-2 px-8 py-4 text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
               >
                 {isAuthenticated ? "Go to Dashboard" : "Get Started Free"}
                 <ArrowRight className="w-5 h-5" />
               </button>
-
-              <button className="btn btn-secondary btn-lg flex items-center gap-2">
+              <button className="btn btn-secondary btn-lg flex items-center gap-2 px-8 py-4 text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
                 <Play className="w-5 h-5" />
                 Watch Demo
               </button>
             </div>
 
-            <div className="flex items-center justify-center gap-8 mt-8 text-sm text-text-muted">
+            {/* Trust Features */}
+            <div className="flex flex-wrap justify-center items-center gap-8 text-sm text-text-muted">
               <div className="flex items-center gap-2">
                 <CheckCircle className="w-4 h-4 text-success" />
                 No credit card required
               </div>
               <div className="flex items-center gap-2">
-                <CheckCircle className="w-4 h-4 text-success" />
+                <Clock className="w-4 h-4 text-info" />
                 Set up in 2 minutes
               </div>
               <div className="flex items-center gap-2">
-                <CheckCircle className="w-4 h-4 text-success" />
+                <Award className="w-4 h-4 text-warning" />
                 14-day free trial
               </div>
             </div>
           </div>
 
-          {/* Hero Image/Animation */}
+          {/* Statistics Grid */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-16">
+            <div className="text-center p-6 bg-bg-card rounded-xl border border-border hover:border-primary/50 transition-all duration-300">
+              <div className="text-3xl font-bold text-primary mb-2">2.5M+</div>
+              <div className="text-sm text-text-muted">users</div>
+            </div>
+            <div className="text-center p-6 bg-bg-card rounded-xl border border-border hover:border-primary/50 transition-all duration-300">
+              <div className="text-3xl font-bold text-primary mb-2">10M+</div>
+              <div className="text-sm text-text-muted">transactions</div>
+            </div>
+            <div className="text-center p-6 bg-bg-card rounded-xl border border-border hover:border-primary/50 transition-all duration-300">
+              <div className="text-3xl font-bold text-primary mb-2">50+</div>
+              <div className="text-sm text-text-muted">countries</div>
+            </div>
+            <div className="text-center p-6 bg-bg-card rounded-xl border border-border hover:border-primary/50 transition-all duration-300">
+              <div className="text-3xl font-bold text-primary mb-2">98%</div>
+              <div className="text-sm text-text-muted">satisfaction</div>
+            </div>
+          </div>
+
+          {/* Hero Image/Illustration */}
           <div className="relative">
-            <div className="bg-gradient-to-r from-primary/20 to-primary/10 rounded-2xl p-8 border border-border">
+            <div className="bg-bg-card rounded-2xl border border-border p-8 shadow-2xl">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-bg-card rounded-xl p-6 border border-border">
-                  <div className="flex items-center gap-3 mb-4">
-                    <Send className="w-5 h-5 text-primary" />
-                    <span className="font-medium text-text">Send Money</span>
+                <div className="text-center">
+                  <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Send className="w-8 h-8 text-primary" />
                   </div>
-                  <p className="text-2xl font-bold text-text mb-1">₹12,500</p>
-                  <p className="text-sm text-text-muted">
+                  <div className="text-2xl font-bold text-text mb-1">
+                    ₹12,500
+                  </div>
+                  <div className="text-sm text-text-muted">
                     Total sent this month
-                  </p>
-                </div>
-
-                <div className="bg-bg-card rounded-xl p-6 border border-border">
-                  <div className="flex items-center gap-3 mb-4">
-                    <Users className="w-5 h-5 text-success" />
-                    <span className="font-medium text-text">Family Circle</span>
                   </div>
-                  <p className="text-2xl font-bold text-text mb-1">8 Members</p>
-                  <p className="text-sm text-text-muted">Active participants</p>
                 </div>
-
-                <div className="bg-bg-card rounded-xl p-6 border border-border">
-                  <div className="flex items-center gap-3 mb-4">
-                    <PiggyBank className="w-5 h-5 text-warning" />
-                    <span className="font-medium text-text">Savings</span>
+                <div className="text-center">
+                  <div className="w-16 h-16 bg-success/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Users2 className="w-8 h-8 text-success" />
                   </div>
-                  <p className="text-2xl font-bold text-text mb-1">₹45,000</p>
-                  <p className="text-sm text-text-muted">Total saved</p>
+                  <div className="text-2xl font-bold text-text mb-1">
+                    8 Members
+                  </div>
+                  <div className="text-sm text-text-muted">
+                    Active participants
+                  </div>
+                </div>
+                <div className="text-center">
+                  <div className="w-16 h-16 bg-warning/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <PiggyBank className="w-8 h-8 text-warning" />
+                  </div>
+                  <div className="text-2xl font-bold text-text mb-1">
+                    ₹45,000
+                  </div>
+                  <div className="text-sm text-text-muted">Total saved</div>
                 </div>
               </div>
             </div>
@@ -328,26 +517,10 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Stats Section */}
-      <section className="py-12 px-4 sm:px-6 lg:px-8 bg-bg-card">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {Object.entries(stats).map(([key, value]) => (
-              <div key={key} className="text-center">
-                <p className="text-3xl font-bold text-primary mb-2">{value}</p>
-                <p className="text-sm text-text-muted capitalize">
-                  {key.replace(/([A-Z])/g, " $1").trim()}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* Features Section */}
-      <section id="features" className="py-16 px-4 sm:px-6 lg:px-8">
+      <section id="features" className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12">
+          <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold text-text mb-4">
               Everything You Need for Family Finance
             </h2>
@@ -363,15 +536,17 @@ const HomePage = () => {
               return (
                 <div
                   key={index}
-                  className="card p-6 hover:border-primary transition-colors"
+                  className="card p-8 hover:border-primary transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
                 >
-                  <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-                    <Icon className="w-6 h-6 text-primary" />
+                  <div className="w-16 h-16 bg-primary/10 rounded-xl flex items-center justify-center mb-6">
+                    <Icon className="w-8 h-8 text-primary" />
                   </div>
-                  <h3 className="text-lg font-semibold text-text mb-2">
+                  <h3 className="text-xl font-semibold text-text mb-3">
                     {feature.title}
                   </h3>
-                  <p className="text-text-muted">{feature.description}</p>
+                  <p className="text-text-muted leading-relaxed">
+                    {feature.description}
+                  </p>
                 </div>
               );
             })}
@@ -382,10 +557,13 @@ const HomePage = () => {
       {/* How It Works */}
       <section
         id="how-it-works"
-        className="py-16 px-4 sm:px-6 lg:px-8 bg-bg-card"
+        className="py-20 px-4 sm:px-6 lg:px-8 bg-bg-card relative overflow-hidden"
       >
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12">
+        {/* Background Elements */}
+        <div className="absolute inset-0 bg-gradient-to-tr from-primary/5 to-secondary/5"></div>
+
+        <div className="max-w-7xl mx-auto relative">
+          <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold text-text mb-4">
               How FamilyPay Works
             </h2>
@@ -395,50 +573,95 @@ const HomePage = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl font-bold text-white">1</span>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
+            {/* Connection Line */}
+            <div className="hidden md:block absolute top-1/2 left-1/4 right-1/4 h-0.5 bg-gradient-to-r from-primary via-secondary to-primary transform -translate-y-1/2"></div>
+
+            {/* Step 1 */}
+            <div className="text-center relative group">
+              <div className="relative mb-8">
+                <div className="w-20 h-20 bg-gradient-to-br from-primary to-primary-dark rounded-full flex items-center justify-center mx-auto shadow-lg group-hover:shadow-xl transition-all duration-300 transform group-hover:scale-110">
+                  <Users className="w-10 h-10 text-white" />
+                </div>
+                <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md">
+                  1
+                </div>
               </div>
-              <h3 className="text-lg font-semibold text-text mb-2">
+              <h3 className="text-xl font-semibold text-text mb-3">
                 Create Account
               </h3>
-              <p className="text-text-muted">
-                Sign up in seconds with your email or phone number
+              <p className="text-text-muted leading-relaxed">
+                Sign up in seconds with your email or phone number. No credit
+                card required.
               </p>
             </div>
 
-            <div className="text-center">
-              <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl font-bold text-white">2</span>
+            {/* Step 2 */}
+            <div className="text-center relative group">
+              <div className="relative mb-8">
+                <div className="w-20 h-20 bg-gradient-to-br from-secondary to-secondary-dark rounded-full flex items-center justify-center mx-auto shadow-lg group-hover:shadow-xl transition-all duration-300 transform group-hover:scale-110">
+                  <Users2 className="w-10 h-10 text-white" />
+                </div>
+                <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-8 h-8 bg-secondary rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md">
+                  2
+                </div>
               </div>
-              <h3 className="text-lg font-semibold text-text mb-2">
+              <h3 className="text-xl font-semibold text-text mb-3">
                 Invite Family
               </h3>
-              <p className="text-text-muted">
-                Add family members to your circle and set permissions
+              <p className="text-text-muted leading-relaxed">
+                Add family members to your circle and set permissions for
+                everyone.
               </p>
             </div>
 
-            <div className="text-center">
-              <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl font-bold text-white">3</span>
+            {/* Step 3 */}
+            <div className="text-center relative group">
+              <div className="relative mb-8">
+                <div className="w-20 h-20 bg-gradient-to-br from-success to-success-dark rounded-full flex items-center justify-center mx-auto shadow-lg group-hover:shadow-xl transition-all duration-300 transform group-hover:scale-110">
+                  <TrendingUp className="w-10 h-10 text-white" />
+                </div>
+                <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-8 h-8 bg-success rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md">
+                  3
+                </div>
               </div>
-              <h3 className="text-lg font-semibold text-text mb-2">
+              <h3 className="text-xl font-semibold text-text mb-3">
                 Start Managing
               </h3>
-              <p className="text-text-muted">
-                Send money, track expenses, and reach your goals together
+              <p className="text-text-muted leading-relaxed">
+                Send money, track expenses, and reach your financial goals
+                together.
               </p>
             </div>
+          </div>
+
+          {/* CTA Section */}
+          <div className="text-center mt-16">
+            <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-6 py-3 rounded-full text-sm font-medium mb-6">
+              <Zap className="w-4 h-4" />
+              Ready to get started?
+            </div>
+            <button
+              onClick={handleGetStarted}
+              className="btn btn-primary btn-lg flex items-center gap-2 mx-auto shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+            >
+              {isAuthenticated ? "Go to Dashboard" : "Get Started Free"}
+              <ArrowRight className="w-5 h-5" />
+            </button>
           </div>
         </div>
       </section>
 
       {/* Pricing Section */}
-      <section id="pricing" className="py-16 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12">
+      <section
+        id="pricing"
+        className="py-20 px-4 sm:px-6 lg:px-8 bg-bg-card relative overflow-hidden"
+      >
+        {/* Background Elements */}
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-secondary/5"></div>
+
+        <div className="max-w-7xl mx-auto relative">
+          <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold text-text mb-4">
               Simple, Transparent Pricing
             </h2>
@@ -448,13 +671,14 @@ const HomePage = () => {
             </p>
           </div>
 
-          <div className="flex justify-center mb-8">
-            <div className="bg-bg-card rounded-lg p-1 inline-flex">
+          {/* Billing Toggle */}
+          <div className="flex justify-center mb-12">
+            <div className="bg-bg-elevated rounded-lg p-1 inline-flex shadow-lg">
               <button
                 onClick={() => setActiveTab("personal")}
-                className={`px-6 py-2 rounded-md transition-colors ${
+                className={`px-8 py-3 rounded-md transition-all duration-300 ${
                   activeTab === "personal"
-                    ? "bg-primary text-white"
+                    ? "bg-primary text-white shadow-md"
                     : "text-text-muted hover:text-text"
                 }`}
               >
@@ -462,9 +686,9 @@ const HomePage = () => {
               </button>
               <button
                 onClick={() => setActiveTab("business")}
-                className={`px-6 py-2 rounded-md transition-colors ${
+                className={`px-8 py-3 rounded-md transition-all duration-300 ${
                   activeTab === "business"
-                    ? "bg-primary text-white"
+                    ? "bg-primary text-white shadow-md"
                     : "text-text-muted hover:text-text"
                 }`}
               >
@@ -473,56 +697,72 @@ const HomePage = () => {
             </div>
           </div>
 
+          {/* Pricing Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {pricingPlans.map((plan, index) => (
               <div
                 key={index}
-                className={`card p-8 relative ${
+                className={`card p-8 relative transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${
                   plan.recommended
-                    ? "border-2 border-primary ring-2 ring-primary/20"
-                    : ""
+                    ? "border-2 border-primary ring-4 ring-primary/20 shadow-2xl"
+                    : "border border-border hover:border-primary/50"
                 }`}
               >
+                {/* Recommended Badge */}
                 {plan.recommended && (
                   <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                    <span className="bg-primary text-white px-4 py-1 rounded-full text-sm font-medium">
+                    <span className="bg-gradient-to-r from-primary to-primary-dark text-white px-6 py-2 rounded-full text-sm font-medium shadow-lg">
                       Most Popular
                     </span>
                   </div>
                 )}
 
-                <div className="text-center mb-6">
-                  <h3 className="text-xl font-semibold text-text mb-2">
+                {/* Plan Header */}
+                <div className="text-center mb-8">
+                  <h3 className="text-2xl font-bold text-text mb-2">
                     {plan.name}
                   </h3>
-                  <p className="text-4xl font-bold text-text mb-2">
-                    {plan.price}
+                  <div className="flex items-baseline justify-center gap-1">
+                    <span className="text-4xl font-bold text-primary">
+                      {plan.price}
+                    </span>
                     {plan.price !== "Free" && (
-                      <span className="text-lg text-text-muted font-normal">
-                        /month
-                      </span>
+                      <span className="text-text-muted">/month</span>
                     )}
-                  </p>
+                  </div>
                 </div>
 
-                <ul className="space-y-3 mb-8">
-                  {plan.features.map((feature, idx) => (
-                    <li key={idx} className="flex items-center gap-3">
-                      <CheckCircle className="w-5 h-5 text-success flex-shrink-0" />
+                {/* Features List */}
+                <ul className="space-y-4 mb-8">
+                  {plan.features.map((feature, featureIndex) => (
+                    <li key={featureIndex} className="flex items-start gap-3">
+                      <CheckCircle className="w-5 h-5 text-success mt-0.5 flex-shrink-0" />
                       <span className="text-text">{feature}</span>
                     </li>
                   ))}
                 </ul>
 
+                {/* CTA Button */}
                 <button
+                  onClick={handleGetStarted}
                   className={`w-full btn ${
-                    plan.recommended ? "btn-primary" : "btn-secondary"
-                  }`}
+                    plan.recommended
+                      ? "btn-primary shadow-lg hover:shadow-xl"
+                      : "btn-secondary"
+                  } transition-all duration-300 transform hover:-translate-y-1`}
                 >
                   {plan.price === "Free" ? "Get Started" : "Start Free Trial"}
                 </button>
               </div>
             ))}
+          </div>
+
+          {/* Trust Indicators */}
+          <div className="text-center mt-16">
+            <div className="inline-flex items-center gap-2 bg-success/10 text-success px-6 py-3 rounded-full text-sm font-medium">
+              <ShieldCheck className="w-4 h-4" />
+              14-day free trial • No credit card required • Cancel anytime
+            </div>
           </div>
         </div>
       </section>
@@ -530,10 +770,13 @@ const HomePage = () => {
       {/* Testimonials */}
       <section
         id="testimonials"
-        className="py-16 px-4 sm:px-6 lg:px-8 bg-bg-card"
+        className="py-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden"
       >
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12">
+        {/* Background Elements */}
+        <div className="absolute inset-0 bg-gradient-to-bl from-primary/5 to-secondary/5"></div>
+
+        <div className="max-w-7xl mx-auto relative">
+          <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold text-text mb-4">
               Loved by Families Worldwide
             </h2>
@@ -545,27 +788,37 @@ const HomePage = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {testimonials.map((testimonial, index) => (
-              <div key={index} className="card p-6">
-                <div className="flex items-center gap-1 mb-4">
+              <div
+                key={index}
+                className="card p-8 hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+              >
+                {/* Rating */}
+                <div className="flex gap-1 mb-4">
                   {[...Array(testimonial.rating)].map((_, i) => (
                     <Star
                       key={i}
-                      className="w-4 h-4 fill-warning text-warning"
+                      className="w-5 h-5 text-warning fill-warning"
                     />
                   ))}
                 </div>
 
-                <p className="text-text-muted mb-4">"{testimonial.content}"</p>
+                {/* Content */}
+                <p className="text-text-muted mb-6 leading-relaxed">
+                  "{testimonial.content}"
+                </p>
 
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-bg-elevated rounded-full flex items-center justify-center text-lg">
+                {/* Author */}
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center text-2xl">
                     {testimonial.avatar}
                   </div>
                   <div>
-                    <p className="font-medium text-text">{testimonial.name}</p>
-                    <p className="text-sm text-text-muted">
+                    <div className="font-semibold text-text">
+                      {testimonial.name}
+                    </div>
+                    <div className="text-sm text-text-muted">
                       {testimonial.role}
-                    </p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -575,25 +828,28 @@ const HomePage = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto">
-          <div className="bg-gradient-to-r from-primary to-primary/80 rounded-2xl p-8 md:p-12 text-center">
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-bg-card relative overflow-hidden">
+        {/* Background Elements */}
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-secondary/10"></div>
+
+        <div className="max-w-4xl mx-auto relative">
+          <div className="bg-gradient-to-r from-primary to-primary-dark rounded-2xl p-8 md:p-12 text-center shadow-2xl">
             <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
               Ready to Transform Your Family's Finances?
             </h2>
-            <p className="text-xl text-white/80 mb-8">
+            <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
               Join millions of families who trust FamilyPay for their financial
               needs.
             </p>
-
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <button
                 onClick={handleGetStarted}
-                className="btn bg-white text-primary hover:bg-gray-50 btn-lg"
+                className="btn bg-white text-primary hover:bg-gray-100 btn-lg flex items-center gap-2 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
               >
-                Get Started Free
+                {isAuthenticated ? "Go to Dashboard" : "Get Started Free"}
+                <ArrowRight className="w-5 h-5" />
               </button>
-              <button className="btn border-2 border-white text-white hover:bg-white/10 btn-lg">
+              <button className="btn bg-white/20 text-white border border-white/30 hover:bg-white/30 btn-lg backdrop-blur-sm transition-all duration-300">
                 Schedule Demo
               </button>
             </div>
@@ -623,20 +879,20 @@ const HomePage = () => {
               <h4 className="font-semibold text-text mb-4">Product</h4>
               <ul className="space-y-2">
                 <li>
-                  <a
-                    href="#features"
+                  <button
+                    onClick={() => scrollToSection("features")}
                     className="text-text-muted hover:text-text"
                   >
                     Features
-                  </a>
+                  </button>
                 </li>
                 <li>
-                  <a
-                    href="#pricing"
+                  <button
+                    onClick={() => scrollToSection("pricing")}
                     className="text-text-muted hover:text-text"
                   >
                     Pricing
-                  </a>
+                  </button>
                 </li>
                 <li>
                   <a href="#" className="text-text-muted hover:text-text">
