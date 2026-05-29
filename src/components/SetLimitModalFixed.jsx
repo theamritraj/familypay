@@ -1,17 +1,35 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
-const SetLimitModal = ({ member, onClose, onSetLimit }) => {
+const SetLimitModal = ({ isOpen, member, onClose, onSetLimit }) => {
   const [formData, setFormData] = useState({
-    dailyLimit: member?.dailyLimit || 1000,
-    monthlyLimit: member?.monthlyLimit || 10000,
+    dailyLimit: 1000,
+    monthlyLimit: 10000,
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // Sync state with member data when it changes
+  useEffect(() => {
+    if (member) {
+      setFormData({
+        dailyLimit: member.dailyLimit || 1000,
+        monthlyLimit: member.monthlyLimit || 10000,
+      });
+    }
+  }, [member]);
+
+  // Reset loading and error when modal opens/closes
+  useEffect(() => {
+    if (isOpen) {
+      setError("");
+      setLoading(false);
+    }
+  }, [isOpen]);
+
   const handleChange = (e) => {
     setFormData({
       ...formData,
-      [e.target.name]: parseFloat(e.target.value),
+      [e.target.name]: parseFloat(e.target.value) || 0,
     });
   };
 
@@ -23,10 +41,12 @@ const SetLimitModal = ({ member, onClose, onSetLimit }) => {
     try {
       await onSetLimit(formData);
     } catch (err) {
-      setError(err.message);
+      setError(err?.message || "An error occurred");
       setLoading(false);
     }
   };
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">

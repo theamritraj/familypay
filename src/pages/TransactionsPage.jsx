@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import BottomNav from "../components/BottomNav";
+import AdminSidebar from "../components/AdminSidebar";
 import {
   ArrowLeft,
   Search,
@@ -15,10 +16,13 @@ import {
   Clock,
   AlertCircle,
   X,
+  Menu,
 } from "lucide-react";
 
 const TransactionsPage = () => {
   const { user } = useAuth();
+  const isAdmin = user?.role === "ADMIN" || user?.role === "PRIMARY";
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -201,200 +205,231 @@ const TransactionsPage = () => {
     );
   }
 
-  return (
-    <div className="min-h-screen bg-bg animate-fade-in pb-20 lg:pb-6">
-      {/* Header */}
-      <header className="bg-bg-card border-b border-border px-4 py-4 sm:px-6 sm:py-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <img
-              src="/logo.jpeg"
-              alt="FamilyPay"
-              className="w-10 h-10 rounded-lg"
-            />
-            <h1 className="text-xl sm:text-2xl font-bold text-text">
-              Transactions
-            </h1>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className="p-2 hover:bg-bg-elevated rounded-lg transition-colors"
-            >
-              <Filter className="w-5 h-5 text-text" />
-            </button>
-            <button
-              onClick={exportTransactions}
-              className="p-2 hover:bg-bg-elevated rounded-lg transition-colors"
-            >
-              <Download className="w-5 h-5 text-text" />
-            </button>
-          </div>
-        </div>
-      </header>
-
-      <div className="px-4 py-4 sm:px-6 sm:py-6">
-        {/* Search Bar */}
-        <div className="relative mb-6">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-text-muted" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search transactions..."
-            className="w-full pl-10 pr-4 py-3 bg-bg-elevated border border-border rounded-lg text-sm text-text placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-          />
-        </div>
-
-        {/* Filters */}
-        {showFilters && (
-          <div className="card mb-6 p-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="form-label text-sm">Transaction Type</label>
-                <select
-                  value={filterType}
-                  onChange={(e) => setFilterType(e.target.value)}
-                  className="form-input"
+  const renderContent = () => {
+    return (
+      <div className="min-h-screen bg-bg animate-fade-in pb-20 lg:pb-6 flex-1">
+        {/* Header */}
+        <header className="bg-bg-card border-b border-border px-4 py-4 sm:px-6 sm:py-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              {isAdmin && (
+                <button
+                  onClick={() => setSidebarOpen(!sidebarOpen)}
+                  className="p-2 rounded-lg hover:bg-bg-elevated transition-colors"
                 >
-                  <option value="all">All Transactions</option>
-                  <option value="sent">Sent</option>
-                  <option value="received">Received</option>
-                  <option value="pending">Pending</option>
-                  <option value="failed">Failed</option>
-                </select>
-              </div>
-              <div>
-                <label className="form-label text-sm">Date Range</label>
-                <select
-                  value={dateRange}
-                  onChange={(e) => setDateRange(e.target.value)}
-                  className="form-input"
-                >
-                  <option value="all">All Time</option>
-                  <option value="today">Today</option>
-                  <option value="week">This Week</option>
-                  <option value="month">This Month</option>
-                </select>
-              </div>
+                  <Menu className="w-5 h-5 text-text" />
+                </button>
+              )}
+              <img
+                src="/logo.jpeg"
+                alt="FamilyPay"
+                className="w-10 h-10 rounded-lg"
+              />
+              <h1 className="text-xl sm:text-2xl font-bold text-text">
+                Transactions
+              </h1>
             </div>
-          </div>
-        )}
-
-        {/* Transaction List */}
-        <div className="space-y-3">
-          {filteredTransactions.length === 0 ? (
-            <div className="text-center py-12">
-              <CreditCard className="w-12 h-12 text-text-muted mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-text mb-2">
-                No transactions found
-              </h3>
-              <p className="text-text-muted">
-                Try adjusting your search or filters
-              </p>
-            </div>
-          ) : (
-            filteredTransactions.map((transaction) => (
-              <div
-                key={transaction.id}
-                className="card p-4 hover:border-primary/30 transition-colors"
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className="p-2 hover:bg-bg-elevated rounded-lg transition-colors"
               >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-bg-elevated rounded-full flex items-center justify-center">
-                      {getTypeIcon(transaction.type)}
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <p className="font-medium text-text">
-                          {transaction.type === "sent"
-                            ? `To: ${transaction.recipient}`
-                            : transaction.type === "received"
-                              ? `From: ${transaction.sender}`
-                              : transaction.description}
-                        </p>
-                        {getStatusIcon(transaction.status)}
-                      </div>
-                      <p className="text-sm text-text-muted">
-                        {transaction.description}
-                      </p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className="text-xs text-text-muted">
-                          {formatDate(transaction.date)}
-                        </span>
-                        <span className="text-xs text-text-muted">•</span>
-                        <span className="text-xs text-text-muted capitalize">
-                          {transaction.method}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p
-                      className={`font-semibold ${
-                        transaction.type === "sent"
-                          ? "text-danger"
-                          : transaction.type === "received"
-                            ? "text-success"
-                            : "text-text"
-                      }`}
-                    >
-                      {transaction.type === "sent" ? "-" : "+"}₹
-                      {transaction.amount.toLocaleString()}
-                    </p>
-                    <p className="text-xs text-text-muted capitalize">
-                      {transaction.status}
-                    </p>
-                  </div>
+                <Filter className="w-5 h-5 text-text" />
+              </button>
+              <button
+                onClick={exportTransactions}
+                className="p-2 hover:bg-bg-elevated rounded-lg transition-colors"
+              >
+                <Download className="w-5 h-5 text-text" />
+              </button>
+            </div>
+          </div>
+        </header>
+
+        <div className="px-4 py-4 sm:px-6 sm:py-6">
+          {/* Search Bar */}
+          <div className="relative mb-6">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-text-muted" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search transactions..."
+              className="w-full pl-10 pr-4 py-3 bg-bg-elevated border border-border rounded-lg text-sm text-text placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+            />
+          </div>
+
+          {/* Filters */}
+          {showFilters && (
+            <div className="card mb-6 p-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="form-label text-sm">Transaction Type</label>
+                  <select
+                    value={filterType}
+                    onChange={(e) => setFilterType(e.target.value)}
+                    className="form-input"
+                  >
+                    <option value="all">All Transactions</option>
+                    <option value="sent">Sent</option>
+                    <option value="received">Received</option>
+                    <option value="pending">Pending</option>
+                    <option value="failed">Failed</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="form-label text-sm">Date Range</label>
+                  <select
+                    value={dateRange}
+                    onChange={(e) => setDateRange(e.target.value)}
+                    className="form-input"
+                  >
+                    <option value="all">All Time</option>
+                    <option value="today">Today</option>
+                    <option value="week">This Week</option>
+                    <option value="month">This Month</option>
+                  </select>
                 </div>
               </div>
-            ))
+            </div>
           )}
-        </div>
 
-        {/* Summary Stats */}
-        <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="card p-4 text-center">
-            <p className="text-sm text-text-muted mb-1">Total Sent</p>
-            <p className="text-lg font-semibold text-danger">
-              ₹
-              {transactions
-                .filter((t) => t.type === "sent")
-                .reduce((sum, t) => sum + t.amount, 0)
-                .toLocaleString()}
-            </p>
+          {/* Transaction List */}
+          <div className="space-y-3">
+            {filteredTransactions.length === 0 ? (
+              <div className="text-center py-12">
+                <CreditCard className="w-12 h-12 text-text-muted mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-text mb-2">
+                  No transactions found
+                </h3>
+                <p className="text-text-muted">
+                  Try adjusting your search or filters
+                </p>
+              </div>
+            ) : (
+              filteredTransactions.map((transaction) => (
+                <div
+                  key={transaction.id}
+                  className="card p-4 hover:border-primary/30 transition-colors"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-bg-elevated rounded-full flex items-center justify-center">
+                        {getTypeIcon(transaction.type)}
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <p className="font-medium text-text">
+                            {transaction.type === "sent"
+                              ? `To: ${transaction.recipient}`
+                              : transaction.type === "received"
+                                ? `From: ${transaction.sender}`
+                                : transaction.description}
+                          </p>
+                          {getStatusIcon(transaction.status)}
+                        </div>
+                        <p className="text-sm text-text-muted">
+                          {transaction.description}
+                        </p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-xs text-text-muted">
+                            {formatDate(transaction.date)}
+                          </span>
+                          <span className="text-xs text-text-muted">•</span>
+                          <span className="text-xs text-text-muted capitalize">
+                            {transaction.method}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p
+                        className={`font-semibold ${
+                          transaction.type === "sent"
+                            ? "text-danger"
+                            : transaction.type === "received"
+                              ? "text-success"
+                              : "text-text"
+                        }`}
+                      >
+                        {transaction.type === "sent" ? "-" : "+"}₹
+                        {transaction.amount.toLocaleString()}
+                      </p>
+                      <p className="text-xs text-text-muted capitalize">
+                        {transaction.status}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
-          <div className="card p-4 text-center">
-            <p className="text-sm text-text-muted mb-1">Total Received</p>
-            <p className="text-lg font-semibold text-success">
-              ₹
-              {transactions
-                .filter((t) => t.type === "received")
-                .reduce((sum, t) => sum + t.amount, 0)
-                .toLocaleString()}
-            </p>
-          </div>
-          <div className="card p-4 text-center">
-            <p className="text-sm text-text-muted mb-1">Net Balance</p>
-            <p className="text-lg font-semibold text-text">
-              ₹
-              {(
-                transactions
-                  .filter((t) => t.type === "received")
-                  .reduce((sum, t) => sum + t.amount, 0) -
-                transactions
+
+          {/* Summary Stats */}
+          <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="card p-4 text-center">
+              <p className="text-sm text-text-muted mb-1">Total Sent</p>
+              <p className="text-lg font-semibold text-danger">
+                ₹
+                {transactions
                   .filter((t) => t.type === "sent")
                   .reduce((sum, t) => sum + t.amount, 0)
-              ).toLocaleString()}
-            </p>
+                  .toLocaleString()}
+              </p>
+            </div>
+            <div className="card p-4 text-center">
+              <p className="text-sm text-text-muted mb-1">Total Received</p>
+              <p className="text-lg font-semibold text-success">
+                ₹
+                {transactions
+                  .filter((t) => t.type === "received")
+                  .reduce((sum, t) => sum + t.amount, 0)
+                  .toLocaleString()}
+              </p>
+            </div>
+            <div className="card p-4 text-center">
+              <p className="text-sm text-text-muted mb-1">Net Balance</p>
+              <p className="text-lg font-semibold text-text">
+                ₹
+                {(
+                  transactions
+                    .filter((t) => t.type === "received")
+                    .reduce((sum, t) => sum + t.amount, 0) -
+                  transactions
+                    .filter((t) => t.type === "sent")
+                    .reduce((sum, t) => sum + t.amount, 0)
+                ).toLocaleString()}
+              </p>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Mobile Bottom Navigation */}
-      <BottomNav userRole={user?.role} />
-    </div>
-  );
+        {/* Mobile Bottom Navigation */}
+        <BottomNav userRole={user?.role} />
+      </div>
+    );
+  };
+
+  if (isAdmin) {
+    return (
+      <div className="min-h-screen bg-bg flex">
+        <AdminSidebar
+          isOpen={sidebarOpen}
+          toggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+        />
+        <div
+          className={`flex-1 transition-all duration-300 ${
+            sidebarOpen ? "ml-64" : "ml-0 lg:ml-20"
+          }`}
+        >
+          {renderContent()}
+        </div>
+      </div>
+    );
+  }
+
+  return renderContent();
+
 };
 
 export default TransactionsPage;

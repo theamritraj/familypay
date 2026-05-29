@@ -131,7 +131,7 @@ const PrimaryDashboard = () => {
                 {/* Hamburger Menu */}
                 <button
                   onClick={() => setSidebarOpen(!sidebarOpen)}
-                  className="p-2 rounded-lg hover:bg-bg-elevated lg:hidden transition-colors"
+                  className="p-2 rounded-lg hover:bg-bg-elevated transition-colors"
                 >
                   <Menu className="w-5 h-5 text-text" />
                 </button>
