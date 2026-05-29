@@ -28,6 +28,7 @@ import {
   limit,
   onSnapshot,
   serverTimestamp,
+  increment,
 } from "firebase/firestore";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
@@ -683,6 +684,19 @@ export const firebaseDB = {
       }));
       callback(transactions);
     });
+  },
+
+  // Top up circle wallet balance
+  topUpCircleWallet: async (circleId, amount) => {
+    try {
+      await updateDoc(doc(db, "circles", circleId), {
+        walletBalance: increment(amount),
+        updatedAt: serverTimestamp(),
+      });
+      return { success: true };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
   },
 };
 

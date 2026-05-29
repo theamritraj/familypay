@@ -4,6 +4,8 @@ import nodemailer from 'nodemailer'
 import dotenv from 'dotenv'
 import path from 'path'
 import { fileURLToPath } from 'url'
+import Razorpay from 'razorpay'
+import crypto from 'crypto'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.resolve(__dirname, '.env') });
@@ -16,6 +18,83 @@ export default defineConfig({
       name: 'api-middleware',
       configureServer: (server) => {
       server.middlewares.use((req, res, next) => {
+        if (req.url.includes('api/create-order') && req.method === 'POST') {
+          let body = '';
+          req.on('data', chunk => {
+            body += chunk.toString();
+          });
+          req.on('end', async () => {
+            try {
+              const parsedData = JSON.parse(body);
+              const { amount, currency, receipt } = parsedData;
+
+              const razorpay = new Razorpay({
+                key_id: process.env.RAZORPAY_KEY_ID || process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+                key_secret: process.env.RAZORPAY_KEY_SECRET,
+              });
+
+              const options = {
+                amount: Math.round(amount * 100), // amount in paisa
+                currency: currency || 'INR',
+                receipt: receipt || `receipt_${Date.now()}`,
+              };
+
+              const order = await razorpay.orders.create(options);
+              
+              res.statusCode = 200;
+              res.setHeader('Content-Type', 'application/json');
+              res.end(JSON.stringify({ success: true, order }));
+            } catch (error) {
+              console.error('Error creating Razorpay order:', error);
+              res.statusCode = 500;
+              res.setHeader('Content-Type', 'application/json');
+              res.end(JSON.stringify({ success: false, message: 'Failed to create order', error: error.message }));
+            }
+          });
+          return;
+        }
+
+        if (req.url.includes('api/verify-payment') && req.method === 'POST') {
+          let body = '';
+          req.on('data', chunk => {
+            body += chunk.toString();
+          });
+          req.on('end', async () => {
+            try {
+              const parsedData = JSON.parse(body);
+              const { orderId, paymentId, signature } = parsedData;
+
+              if (!orderId || !paymentId || !signature) {
+                res.statusCode = 400;
+                res.setHeader('Content-Type', 'application/json');
+                res.end(JSON.stringify({ success: false, message: 'Missing verification fields' }));
+                return;
+              }
+
+              const expectedSignature = crypto
+                .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
+                .update(orderId + '|' + paymentId)
+                .digest('hex');
+
+              if (expectedSignature === signature) {
+                res.statusCode = 200;
+                res.setHeader('Content-Type', 'application/json');
+                res.end(JSON.stringify({ success: true, message: 'Payment verified successfully' }));
+              } else {
+                res.statusCode = 400;
+                res.setHeader('Content-Type', 'application/json');
+                res.end(JSON.stringify({ success: false, message: 'Invalid payment signature' }));
+              }
+            } catch (error) {
+              console.error('Error verifying Razorpay payment:', error);
+              res.statusCode = 500;
+              res.setHeader('Content-Type', 'application/json');
+              res.end(JSON.stringify({ success: false, message: 'Failed to verify payment', error: error.message }));
+            }
+          });
+          return;
+        }
+
         if (req.url.includes('api/send-invite') && req.method === 'POST') {
           let body = '';
           req.on('data', chunk => {

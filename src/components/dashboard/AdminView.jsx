@@ -19,6 +19,9 @@ const AdminView = () => {
   const [showAddMember, setShowAddMember] = useState(false);
   const [selectedMember, setSelectedMember] = useState(null);
   const [emergencyLock, setEmergencyLock] = useState(false);
+  const [showTopUp, setShowTopUp] = useState(false);
+  const [topUpAmount, setTopUpAmount] = useState("");
+  const [paying, setPaying] = useState(false);
 
   const openInviteFlow = () => {
     if (window.innerWidth < 1024) {
@@ -26,6 +29,102 @@ const AdminView = () => {
       return;
     }
     setShowAddMember(true);
+  };
+
+  const handleTopUpSubmit = async (amount) => {
+    if (!amount || isNaN(amount) || amount <= 0) {
+      alert("Please enter a valid amount");
+      return;
+    }
+    
+    setPaying(true);
+    try {
+      // 1. Create order on the backend middleware
+      const res = await fetch("/api/create-order", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          amount: Number(amount),
+          currency: "INR",
+          receipt: `topup_${user.familyCircle}_${Date.now()}`
+        }),
+      });
+      
+      const orderData = await res.json();
+      if (!orderData.success || !orderData.order) {
+        alert("Failed to initiate transaction: " + (orderData.message || "Unknown error"));
+        setPaying(false);
+        return;
+      }
+      
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID || "rzp_live_SplBptawfhlkLw",
+        amount: orderData.order.amount,
+        currency: orderData.order.currency,
+        name: "FamilyPay Circle Top-Up",
+        description: `Top up wallet for circle: ${circle?.name || "Family Circle"}`,
+        order_id: orderData.order.id,
+        handler: async function (response) {
+          try {
+            // 2. Verify payment on backend
+            const verifyRes = await fetch("/api/verify-payment", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                orderId: response.razorpay_order_id,
+                paymentId: response.razorpay_payment_id,
+                signature: response.razorpay_signature,
+              }),
+            });
+            
+            const verifyData = await verifyRes.json();
+            if (verifyData.success) {
+              // 3. Update firestore increment
+              const dbRes = await firebaseDB.topUpCircleWallet(user.familyCircle, Number(amount));
+              if (dbRes.success) {
+                alert("Wallet topped up successfully!");
+                setShowTopUp(false);
+                setTopUpAmount("");
+                loadDashboardData();
+              } else {
+                alert("Payment verified, but failed to update wallet: " + dbRes.error);
+              }
+            } else {
+              alert("Payment verification failed: " + (verifyData.message || "Signature invalid"));
+            }
+          } catch (err) {
+            console.error("Verification error", err);
+            alert("Error during payment verification: " + err.message);
+          } finally {
+            setPaying(false);
+          }
+        },
+        modal: {
+          ondismiss: function () {
+            setPaying(false);
+          }
+        },
+        prefill: {
+          name: user.name || "",
+          email: user.email || "",
+          contact: user.phone || "",
+        },
+        theme: {
+          color: "#4f46e5",
+        },
+      };
+      
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+    } catch (err) {
+      console.error("Top up payment error", err);
+      alert("Failed to initiate payment: " + err.message);
+      setPaying(false);
+    }
   };
 
   const loadDashboardData = async () => {
@@ -334,7 +433,41 @@ const AdminView = () => {
           </div>
 
           {/* Family Pay Statistics Overview Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 mb-6">
+            {/* Circle Wallet Balance Card */}
+            <div className="card bg-gradient-to-br from-indigo-500/10 to-indigo-600/5 border border-indigo-500/20 flex flex-col justify-between p-5">
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="p-3 bg-indigo-500 rounded-lg text-white">
+                    <svg
+                      className="w-6 h-6"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"
+                      />
+                    </svg>
+                  </div>
+                  <span className="text-indigo-500 text-sm font-semibold">Wallet</span>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-text">₹{(circle?.walletBalance || 0).toLocaleString()}</div>
+                  <div className="text-sm text-text-muted">Available Funds</div>
+                </div>
+              </div>
+              <button 
+                onClick={() => setShowTopUp(true)}
+                className="mt-4 w-full btn btn-primary text-xs py-2 rounded-lg flex items-center justify-center gap-1.5 font-bold hover:scale-[1.02] active:scale-[0.98] transition-transform duration-100"
+              >
+                ➕ Top Up Wallet
+              </button>
+            </div>
+
             {/* Total Spending Card */}
             <div className="card bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20">
               <div className="flex items-center justify-between mb-4">
@@ -894,6 +1027,100 @@ const AdminView = () => {
               }}
               onSubmit={(limits) => handleUpdateLimit(selectedMember.id, limits)}
             />
+          )}
+
+          {showTopUp && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+              <div className="bg-bg-card border border-border rounded-2xl w-full max-w-md overflow-hidden shadow-2xl animate-scale-up">
+                <div className="p-6 border-b border-border flex justify-between items-center bg-bg-elevated">
+                  <h3 className="text-lg font-bold text-text flex items-center gap-2">
+                    💳 Top Up Circle Wallet
+                  </h3>
+                  <button 
+                    onClick={() => {
+                      if (!paying) {
+                        setShowTopUp(false);
+                        setTopUpAmount("");
+                      }
+                    }} 
+                    className="text-text-muted hover:text-text transition-colors"
+                    disabled={paying}
+                  >
+                    ✕
+                  </button>
+                </div>
+                <div className="p-6 space-y-6">
+                  <div>
+                    <label className="block text-xs font-semibold text-text-muted uppercase tracking-wider mb-2">
+                      Enter Top-Up Amount (₹)
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xl font-bold text-text-muted">₹</span>
+                      <input
+                        type="number"
+                        placeholder="0.00"
+                        value={topUpAmount}
+                        onChange={(e) => setTopUpAmount(e.target.value)}
+                        className="w-full pl-9 pr-4 py-3 bg-bg-elevated border border-border rounded-xl text-lg font-bold text-text focus:outline-none focus:border-primary transition-colors"
+                        disabled={paying}
+                        min="1"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Preset Amounts */}
+                  <div className="grid grid-cols-4 gap-2">
+                    {[500, 1000, 2000, 5000].map((preset) => (
+                      <button
+                        key={preset}
+                        onClick={() => setTopUpAmount(preset.toString())}
+                        type="button"
+                        className="py-2.5 bg-bg-elevated hover:bg-primary/10 border border-border hover:border-primary rounded-lg text-xs font-bold text-text hover:text-primary transition-all duration-150"
+                        disabled={paying}
+                      >
+                        +₹{preset}
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="bg-indigo-500/10 border border-indigo-500/20 p-4 rounded-xl flex gap-3 text-xs text-indigo-500 leading-relaxed">
+                    <span className="text-base">ℹ️</span>
+                    <span>
+                      Funds will be added instantly to your family circle's shared wallet. All family members can use this balance for authorized payments up to their limits.
+                    </span>
+                  </div>
+
+                  <div className="flex gap-3 pt-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowTopUp(false);
+                        setTopUpAmount("");
+                      }}
+                      className="flex-1 btn btn-secondary py-3 text-sm font-semibold rounded-xl"
+                      disabled={paying}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleTopUpSubmit(topUpAmount)}
+                      className="flex-1 btn btn-primary py-3 text-sm font-semibold rounded-xl flex items-center justify-center gap-2"
+                      disabled={paying}
+                    >
+                      {paying ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                          Processing...
+                        </>
+                      ) : (
+                        "Proceed to Pay"
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
           )}
         </div>
       </div>
