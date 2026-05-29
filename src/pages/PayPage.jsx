@@ -2,8 +2,8 @@ import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate, useLocation } from "react-router-dom";
 import paymentService from "../services/paymentService";
-import QRScannerModal from "../components/QRScannerModalLive";
-import UPIPaymentModal from "../components/UPIPaymentModal";
+import UpiPaymentModal from "../components/modals/UpiPaymentModal";
+import BottomNavigation from "../components/navigation/BottomNavigation";
 import {
   QrCode,
   CreditCard,
@@ -701,10 +701,10 @@ const PayPage = () => {
       )}
 
       {/* Mobile Bottom Navigation */}
-      <BottomNav userRole={user?.role} />
+      <BottomNavigation userRole={user?.role} />
 
       {/* UPI Payment Modal */}
-      <UPIPaymentModal
+      <UpiPaymentModal
         isOpen={showUPIPaymentModal}
         onClose={() => setShowUPIPaymentModal(false)}
         paymentData={{

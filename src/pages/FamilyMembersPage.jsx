@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
-import BottomNav from "../components/BottomNav";
-import AddMemberModal from "../components/AddMemberModal";
-import SetLimitModal from "../components/SetLimitModalFixed";
-import AdminSidebar from "../components/AdminSidebar";
+import BottomNavigation from "../components/navigation/BottomNavigation";
+import AddFamilyMemberModal from "../components/modals/AddFamilyMemberModal";
+import SetMemberLimitsModal from "../components/modals/SetMemberLimitsModal";
+import AdminSidebar from "../components/navigation/AdminSidebar";
 import {
   Users,
   UserPlus,
@@ -232,7 +232,7 @@ const FamilyMembersPage = () => {
               {isAdmin && (
                 <button
                   onClick={() => setSidebarOpen(!sidebarOpen)}
-                  className="p-2 rounded-lg hover:bg-bg-elevated transition-colors"
+                  className="hidden lg:block p-2 rounded-lg hover:bg-bg-elevated transition-colors"
                 >
                   <Menu className="w-5 h-5 text-text" />
                 </button>
@@ -448,25 +448,30 @@ const FamilyMembersPage = () => {
         </div>
 
         {/* Mobile Bottom Navigation */}
-        <BottomNav userRole={user?.role} />
+        <BottomNavigation userRole={user?.role} />
 
         {/* Add Member Modal */}
-        <AddMemberModal
-          isOpen={showAddModal}
-          onClose={() => setShowAddModal(false)}
-          onAdd={handleAddMember}
-        />
+        {showAddModal && (
+          <AddFamilyMemberModal
+            isOpen
+            onClose={() => setShowAddModal(false)}
+            onSubmit={handleAddMember}
+          />
+        )}
 
         {/* Set Limit Modal */}
-        <SetLimitModal
-          isOpen={showLimitModal}
-          onClose={() => {
-            setShowLimitModal(false);
-            setSelectedMember(null);
-          }}
-          member={selectedMember}
-          onSetLimit={handleSetLimit}
-        />
+        {showLimitModal && (
+          <SetMemberLimitsModal
+            key={selectedMember?.id}
+            isOpen
+            onClose={() => {
+              setShowLimitModal(false);
+              setSelectedMember(null);
+            }}
+            member={selectedMember}
+            onSubmit={handleSetLimit}
+          />
+        )}
       </div>
     );
   };
@@ -479,8 +484,8 @@ const FamilyMembersPage = () => {
           toggleSidebar={() => setSidebarOpen(!sidebarOpen)}
         />
         <div
-          className={`flex-1 transition-all duration-300 ${
-            sidebarOpen ? "ml-64" : "ml-0 lg:ml-20"
+          className={`flex-1 min-w-0 w-full flex flex-col transition-all duration-300 ml-0 lg:${
+            sidebarOpen ? "ml-64" : "ml-20"
           }`}
         >
           {renderContent()}

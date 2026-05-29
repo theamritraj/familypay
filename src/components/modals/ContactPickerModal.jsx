@@ -1,23 +1,11 @@
-import { useState, useEffect } from "react";
-import {
-  Search,
-  User,
-  Phone,
-  Mail,
-  X,
-  CheckCircle,
-  Clock,
-  AlertCircle,
-} from "lucide-react";
+import { useState } from "react";
+import { AlertCircle, CheckCircle, Phone, Search, User, X } from "lucide-react";
 
-const ContactListModal = ({ isOpen, onClose, onSelectContact, user }) => {
+const ContactPickerModal = ({ isOpen, onClose, onSelectContact }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedContact, setSelectedContact] = useState(null);
-  const [contacts, setContacts] = useState([]);
-  const [loading, setLoading] = useState(true);
 
-  // Mock contacts data - in real app, this would come from your backend
-  const getMockContacts = () => {
+  const [contacts] = useState(() => {
     const now = Date.now();
     return [
       {
@@ -30,7 +18,7 @@ const ContactListModal = ({ isOpen, onClose, onSelectContact, user }) => {
         isFamily: true,
         lastTransaction: {
           amount: 500,
-          date: new Date(now - 1000 * 60 * 60 * 24), // 1 day ago
+          date: new Date(now - 1000 * 60 * 60 * 24),
           type: "received",
         },
       },
@@ -44,7 +32,7 @@ const ContactListModal = ({ isOpen, onClose, onSelectContact, user }) => {
         isFamily: true,
         lastTransaction: {
           amount: 1000,
-          date: new Date(now - 1000 * 60 * 60 * 48), // 2 days ago
+          date: new Date(now - 1000 * 60 * 60 * 48),
           type: "sent",
         },
       },
@@ -58,7 +46,7 @@ const ContactListModal = ({ isOpen, onClose, onSelectContact, user }) => {
         isFamily: true,
         lastTransaction: {
           amount: 250,
-          date: new Date(now - 1000 * 60 * 60 * 72), // 3 days ago
+          date: new Date(now - 1000 * 60 * 60 * 72),
           type: "received",
         },
       },
@@ -82,7 +70,7 @@ const ContactListModal = ({ isOpen, onClose, onSelectContact, user }) => {
         isFamily: false,
         lastTransaction: {
           amount: 150,
-          date: new Date(now - 1000 * 60 * 60 * 120), // 5 days ago
+          date: new Date(now - 1000 * 60 * 60 * 120),
           type: "sent",
         },
       },
@@ -106,7 +94,7 @@ const ContactListModal = ({ isOpen, onClose, onSelectContact, user }) => {
         isFamily: false,
         lastTransaction: {
           amount: 300,
-          date: new Date(now - 1000 * 60 * 60 * 168), // 7 days ago
+          date: new Date(now - 1000 * 60 * 60 * 168),
           type: "received",
         },
       },
@@ -121,15 +109,13 @@ const ContactListModal = ({ isOpen, onClose, onSelectContact, user }) => {
         lastTransaction: null,
       },
     ];
-  };
+  });
 
-  useEffect(() => {
-    // Simulate loading contacts
-    setTimeout(() => {
-      setContacts(getMockContacts());
-      setLoading(false);
-    }, 500);
-  }, []);
+  const handleClose = () => {
+    setSearchQuery("");
+    setSelectedContact(null);
+    onClose();
+  };
 
   const filteredContacts = contacts.filter(
     (contact) =>
@@ -140,17 +126,6 @@ const ContactListModal = ({ isOpen, onClose, onSelectContact, user }) => {
 
   const familyContacts = filteredContacts.filter((contact) => contact.isFamily);
   const otherContacts = filteredContacts.filter((contact) => !contact.isFamily);
-
-  const handleContactSelect = (contact) => {
-    setSelectedContact(contact);
-  };
-
-  const handleProceedToPayment = () => {
-    if (selectedContact) {
-      onSelectContact(selectedContact);
-      onClose();
-    }
-  };
 
   const formatLastTransaction = (transaction) => {
     if (!transaction) return null;
@@ -165,101 +140,96 @@ const ContactListModal = ({ isOpen, onClose, onSelectContact, user }) => {
     return `${Math.floor(diffDays / 30)} months ago`;
   };
 
+  const handleProceedToPayment = () => {
+    if (!selectedContact) return;
+    onSelectContact(selectedContact);
+    handleClose();
+  };
+
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-bg-card rounded-xl w-full max-w-2xl max-h-[80vh] flex flex-col">
-        {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-border">
           <h2 className="text-xl font-semibold text-text">Send Money</h2>
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="p-2 hover:bg-bg-elevated rounded-lg transition-colors"
+            type="button"
+            aria-label="Close"
           >
             <X className="w-5 h-5 text-text" />
           </button>
         </div>
 
-        {/* Search Bar */}
         <div className="p-4 border-b border-border">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-text-muted" />
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-text-muted" />
             <input
               type="text"
+              placeholder="Search contacts..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search by name, phone, or email..."
-              className="w-full pl-10 pr-4 py-2.5 bg-bg-elevated border border-border rounded-lg text-sm text-text placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+              className="w-full bg-bg-elevated border border-border rounded-lg pl-12 pr-4 py-3 text-text placeholder-text-muted focus:outline-none focus:border-primary"
             />
           </div>
         </div>
 
-        {/* Contact List */}
         <div className="flex-1 overflow-y-auto p-4">
-          {loading ? (
-            <div className="flex items-center justify-center py-12">
-              <div className="loading-spinner"></div>
-            </div>
-          ) : (
-            <div className="space-y-6">
-              {/* Family Contacts */}
-              {familyContacts.length > 0 && (
-                <div>
-                  <h3 className="text-sm font-semibold text-text-muted mb-3">
-                    FAMILY
-                  </h3>
-                  <div className="space-y-2">
-                    {familyContacts.map((contact) => (
-                      <ContactCard
-                        key={contact.id}
-                        contact={contact}
-                        isSelected={selectedContact?.id === contact.id}
-                        onSelect={() => handleContactSelect(contact)}
-                        formatLastTransaction={formatLastTransaction}
-                      />
-                    ))}
-                  </div>
+          <div className="space-y-6">
+            {familyContacts.length > 0 && (
+              <div>
+                <h3 className="text-xs font-semibold text-text-muted mb-3 tracking-wider">
+                  FAMILY
+                </h3>
+                <div className="space-y-2">
+                  {familyContacts.map((contact) => (
+                    <ContactCard
+                      key={contact.id}
+                      contact={contact}
+                      isSelected={selectedContact?.id === contact.id}
+                      onSelect={() => setSelectedContact(contact)}
+                      formatLastTransaction={formatLastTransaction}
+                    />
+                  ))}
                 </div>
-              )}
+              </div>
+            )}
 
-              {/* Other Contacts */}
-              {otherContacts.length > 0 && (
-                <div>
-                  <h3 className="text-sm font-semibold text-text-muted mb-3">
-                    OTHERS
-                  </h3>
-                  <div className="space-y-2">
-                    {otherContacts.map((contact) => (
-                      <ContactCard
-                        key={contact.id}
-                        contact={contact}
-                        isSelected={selectedContact?.id === contact.id}
-                        onSelect={() => handleContactSelect(contact)}
-                        formatLastTransaction={formatLastTransaction}
-                      />
-                    ))}
-                  </div>
+            {otherContacts.length > 0 && (
+              <div>
+                <h3 className="text-xs font-semibold text-text-muted mb-3 tracking-wider">
+                  OTHERS
+                </h3>
+                <div className="space-y-2">
+                  {otherContacts.map((contact) => (
+                    <ContactCard
+                      key={contact.id}
+                      contact={contact}
+                      isSelected={selectedContact?.id === contact.id}
+                      onSelect={() => setSelectedContact(contact)}
+                      formatLastTransaction={formatLastTransaction}
+                    />
+                  ))}
                 </div>
-              )}
+              </div>
+            )}
 
-              {/* No Results */}
-              {filteredContacts.length === 0 && (
-                <div className="text-center py-12">
-                  <User className="w-12 h-12 text-text-muted mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-text mb-2">
-                    No contacts found
-                  </h3>
-                  <p className="text-text-muted">
-                    Try searching with a different name or phone number
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
+            {filteredContacts.length === 0 && (
+              <div className="text-center py-12">
+                <User className="w-12 h-12 text-text-muted mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-text mb-2">
+                  No contacts found
+                </h3>
+                <p className="text-text-muted">
+                  Try searching with a different name or phone number
+                </p>
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* Footer */}
         <div className="p-4 border-t border-border">
           <div className="flex items-center justify-between">
             <div className="text-sm text-text-muted">
@@ -290,7 +260,6 @@ const ContactListModal = ({ isOpen, onClose, onSelectContact, user }) => {
   );
 };
 
-// Contact Card Component
 const ContactCard = ({
   contact,
   isSelected,
@@ -305,6 +274,11 @@ const ContactCard = ({
           ? "border-primary bg-primary/5"
           : "border-border hover:border-primary hover:bg-bg-elevated"
       }`}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") onSelect();
+      }}
     >
       <div className="flex items-center gap-3">
         <div className="relative">
@@ -346,9 +320,7 @@ const ContactCard = ({
                   <CheckCircle className="w-3 h-3" />
                 )}
                 <span>
-                  {contact.lastTransaction.type === "sent"
-                    ? "Sent"
-                    : "Received"}{" "}
+                  {contact.lastTransaction.type === "sent" ? "Sent" : "Received"}{" "}
                   ₹{contact.lastTransaction.amount}
                 </span>
               </div>
@@ -371,4 +343,4 @@ const ContactCard = ({
   );
 };
 
-export default ContactListModal;
+export default ContactPickerModal;

@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { mockAPI, mockCircle } from "../services/mockData";
-import AddMemberModal from "../components/AddMemberModal";
-import SetLimitModal from "../components/SetLimitModal";
-import AdminSidebar from "../components/AdminSidebar";
-import BottomNav from "../components/BottomNav";
+import AddFamilyMemberModal from "../components/modals/AddFamilyMemberModal";
+import SetMemberLimitsModal from "../components/modals/SetMemberLimitsModal";
+import AdminSidebar from "../components/navigation/AdminSidebar";
+import BottomNavigation from "../components/navigation/BottomNavigation";
 import { Menu, Sun, Moon, Bell, Search, User, ChevronDown } from "lucide-react";
 
 const PrimaryDashboard = () => {
@@ -120,7 +120,7 @@ const PrimaryDashboard = () => {
       />
 
       <div
-        className={`flex-1 transition-all duration-300 ${sidebarOpen ? "ml-64" : "ml-0 lg:ml-20"}`}
+        className={`flex-1 min-w-0 w-full flex flex-col transition-all duration-300 ml-0 lg:${sidebarOpen ? "ml-64" : "ml-20"}`}
       >
         {/* Top Navigation Bar */}
         <header className="bg-bg-card border-b border-border sticky top-0 z-40">
@@ -131,7 +131,7 @@ const PrimaryDashboard = () => {
                 {/* Hamburger Menu */}
                 <button
                   onClick={() => setSidebarOpen(!sidebarOpen)}
-                  className="p-2 rounded-lg hover:bg-bg-elevated transition-colors"
+                  className="hidden lg:block p-2 rounded-lg hover:bg-bg-elevated transition-colors"
                 >
                   <Menu className="w-5 h-5 text-text" />
                 </button>
@@ -1327,27 +1327,34 @@ const PrimaryDashboard = () => {
 
           {/* Modals */}
           {showAddMember && (
-            <AddMemberModal
+            <AddFamilyMemberModal
+              isOpen
               onClose={() => setShowAddMember(false)}
-              onAdd={async () => {
+              onSubmit={async () => {
                 alert("Demo Mode: Member addition simulated");
-                setShowAddMember(false);
               }}
             />
           )}
 
           {selectedMember && (
-            <SetLimitModal
-              member={selectedMember}
+            <SetMemberLimitsModal
+              key={selectedMember.id}
+              isOpen
               onClose={() => setSelectedMember(null)}
-              onUpdate={handleUpdateLimit}
+              member={{
+                id: selectedMember.id,
+                name: selectedMember.secondaryUser?.name,
+                dailyLimit: selectedMember.dailyLimit,
+                monthlyLimit: selectedMember.monthlyLimit,
+              }}
+              onSubmit={(limits) => handleUpdateLimit(selectedMember.id, limits)}
             />
           )}
         </div>
       </div>
 
       {/* Mobile Bottom Navigation */}
-      <BottomNav userRole={user?.role} />
+      <BottomNavigation userRole={user?.role} />
     </div>
   );
 };

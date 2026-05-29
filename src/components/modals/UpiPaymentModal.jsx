@@ -8,7 +8,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 
-const UPIPaymentModal = ({
+const UpiPaymentModal = ({
   isOpen,
   onClose,
   paymentData,
@@ -288,4 +288,4 @@ const UPIPaymentModal = ({
   );
 };
 
-export default UPIPaymentModal;
+export default UpiPaymentModal;

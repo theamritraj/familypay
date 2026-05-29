@@ -3,10 +3,9 @@ import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { firebaseDB } from "../firebase";
 import paymentService from "../services/paymentService";
-import PaymentRequestModal from "../components/PaymentRequestModal";
-import ContactListModal from "../components/ContactListModal";
-import QRScannerModal from "../components/QRScannerModalLive";
-import BottomNav from "../components/BottomNav";
+import ContactPickerModal from "../components/modals/ContactPickerModal";
+import QrScannerModal from "../components/modals/QrScannerModal";
+import BottomNavigation from "../components/navigation/BottomNavigation";
 import {
   QrCode,
   CreditCard,
@@ -538,18 +537,17 @@ const SecondaryDashboard = () => {
       </div>
 
       {/* Mobile Bottom Navigation */}
-      <BottomNav userRole={user?.role} />
+      <BottomNavigation userRole={user?.role} />
 
       {/* Contact List Modal */}
-      <ContactListModal
+      <ContactPickerModal
         isOpen={showContactModal}
         onClose={() => setShowContactModal(false)}
         onSelectContact={handleContactSelect}
-        user={user}
       />
 
       {/* QR Scanner Modal */}
-      <QRScannerModal
+      <QrScannerModal
         isOpen={showQRScannerModal}
         onClose={() => setShowQRScannerModal(false)}
         onScanSuccess={handleQRScanSuccess}

@@ -9,15 +9,16 @@ import {
   RefreshCw,
 } from "lucide-react";
 
-const QRScannerModal = ({ isOpen, onClose, onScanSuccess }) => {
+const QrScannerModal = ({ isOpen, onClose, onScanSuccess }) => {
   const [isScanning, setIsScanning] = useState(false);
   const [scanResult, setScanResult] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [cameraActive, setCameraActive] = useState(false);
   const videoRef = useRef(null);
   const streamRef = useRef(null);
 
-  // Mock QR codes for demo purposes
+  // Mock QR codes for demo purposes (fallback)
   const mockQRCodes = [
     {
       upiId: "mom@familypay",
@@ -56,33 +57,40 @@ const QRScannerModal = ({ isOpen, onClose, onScanSuccess }) => {
     setError(null);
 
     try {
+      // Check if mediaDevices is available
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error('Camera API not supported in this browser');
+      }
+
       // Stop any existing stream
       if (streamRef.current) {
         streamRef.current.getTracks().forEach(track => track.stop());
       }
 
-      // Try to get camera access with fallback options
+      console.log('Requesting camera access...');
+
+      // Try different camera configurations
       let stream = null;
-      
-      try {
-        // Try rear camera first
-        stream = await navigator.mediaDevices.getUserMedia({
-          video: { 
-            facingMode: "environment",
-            width: { ideal: 640 },
-            height: { ideal: 480 }
-          },
-        });
-      } catch (err) {
-        console.log("Rear camera failed, trying front camera:", err);
-        // Fallback to front camera
-        stream = await navigator.mediaDevices.getUserMedia({
-          video: { 
-            facingMode: "user",
-            width: { ideal: 640 },
-            height: { ideal: 480 }
-          },
-        });
+      const configs = [
+        { video: { facingMode: "environment" } }, // Rear camera
+        { video: { facingMode: "user" } },        // Front camera
+        { video: true },                           // Any camera
+      ];
+
+      for (const config of configs) {
+        try {
+          console.log('Trying config:', config);
+          stream = await navigator.mediaDevices.getUserMedia(config);
+          console.log('Camera access granted');
+          break;
+        } catch (err) {
+          console.log('Config failed:', config, err);
+          continue;
+        }
+      }
+
+      if (!stream) {
+        throw new Error('No camera could be accessed');
       }
 
       streamRef.current = stream;
@@ -90,55 +98,73 @@ const QRScannerModal = ({ isOpen, onClose, onScanSuccess }) => {
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         
-        // Wait for video to be ready
+        // Set up video event handlers
         videoRef.current.onloadedmetadata = () => {
+          console.log('Video metadata loaded');
           videoRef.current.play()
             .then(() => {
+              console.log('Video playing successfully');
+              setCameraActive(true);
               setIsScanning(true);
               setLoading(false);
-              // Start simulated scanning after 2 seconds
+              
+              // Start simulated scanning after 3 seconds
               setTimeout(() => {
-                if (isScanning) {
+                if (isScanning && cameraActive) {
                   const randomQR = mockQRCodes[Math.floor(Math.random() * mockQRCodes.length)];
                   handleScanSuccess(randomQR);
                 }
-              }, 2000);
+              }, 3000);
             })
             .catch(err => {
-              console.error("Video play failed:", err);
-              setError("Failed to start camera preview");
+              console.error('Video play failed:', err);
+              setError('Failed to start camera preview');
               setLoading(false);
             });
         };
+
+        videoRef.current.onerror = (err) => {
+          console.error('Video error:', err);
+          setError('Camera preview error');
+          setLoading(false);
+        };
       }
     } catch (err) {
-      console.error("Camera access error:", err);
+      console.error('Camera access error:', err);
       setLoading(false);
       
       if (err.name === 'NotAllowedError') {
-        setError("Camera access denied. Please allow camera permissions and try again.");
+        setError('Camera access denied. Please allow camera permissions and try again.');
       } else if (err.name === 'NotFoundError') {
-        setError("No camera found on this device.");
+        setError('No camera found on this device.');
       } else if (err.name === 'NotReadableError') {
-        setError("Camera is already in use by another application.");
+        setError('Camera is already in use by another application.');
+      } else if (err.name === 'OverconstrainedError') {
+        setError('Camera does not support the requested constraints.');
       } else {
-        setError("Failed to access camera. Please check your device settings.");
+        setError('Failed to access camera: ' + err.message);
       }
     }
   };
 
   const stopCamera = () => {
+    console.log('Stopping camera...');
     if (streamRef.current) {
-      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current.getTracks().forEach(track => {
+        console.log('Stopping track:', track);
+        track.stop();
+      });
       streamRef.current = null;
     }
     if (videoRef.current) {
       videoRef.current.srcObject = null;
     }
+    setCameraActive(false);
     setIsScanning(false);
   };
 
   const handleScanSuccess = (qrData) => {
+    console.log('Scan successful:', qrData);
     setScanResult(qrData);
     setIsScanning(false);
     stopCamera();
@@ -177,6 +203,7 @@ const QRScannerModal = ({ isOpen, onClose, onScanSuccess }) => {
 
   useEffect(() => {
     if (isOpen) {
+      console.log('QR Scanner Modal opened');
       startCamera();
     } else {
       stopCamera();
@@ -215,9 +242,9 @@ const QRScannerModal = ({ isOpen, onClose, onScanSuccess }) => {
                 {loading ? (
                   <div className="flex flex-col items-center justify-center h-full text-white">
                     <Loader2 className="w-16 h-16 animate-spin mb-4" />
-                    <p className="text-sm">Initializing camera...</p>
+                    <p className="text-sm">Accessing camera...</p>
                   </div>
-                ) : isScanning ? (
+                ) : cameraActive && isScanning ? (
                   <>
                     <video
                       ref={videoRef}
@@ -225,6 +252,7 @@ const QRScannerModal = ({ isOpen, onClose, onScanSuccess }) => {
                       playsInline
                       muted
                       className="w-full h-full object-cover"
+                      style={{ transform: 'scaleX(-1)' }}
                     />
                     {/* Scanning Overlay */}
                     <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
@@ -245,7 +273,7 @@ const QRScannerModal = ({ isOpen, onClose, onScanSuccess }) => {
                     {/* Scanning Instructions */}
                     <div className="absolute bottom-4 left-0 right-0 text-center pointer-events-none">
                       <p className="text-white text-sm bg-black/50 px-3 py-1 rounded-full inline-block">
-                        Scanning... (Auto-detect in 2 seconds)
+                        📷 Live Camera - Auto-detect in 3 seconds
                       </p>
                     </div>
                   </>
@@ -253,13 +281,13 @@ const QRScannerModal = ({ isOpen, onClose, onScanSuccess }) => {
                   <div className="flex flex-col items-center justify-center h-full text-white p-4">
                     <AlertCircle className="w-16 h-16 text-red-400 mb-4" />
                     <p className="text-center text-sm mb-4">{error}</p>
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 flex-wrap justify-center">
                       <button
                         onClick={handleRetry}
                         className="px-4 py-2 bg-primary text-white rounded-lg text-sm hover:bg-primary/90 transition-colors flex items-center gap-2"
                       >
                         <RefreshCw className="w-4 h-4" />
-                        Retry
+                        Retry Camera
                       </button>
                       <button
                         onClick={handleManualEntry}
@@ -272,9 +300,25 @@ const QRScannerModal = ({ isOpen, onClose, onScanSuccess }) => {
                 ) : (
                   <div className="flex flex-col items-center justify-center h-full text-white">
                     <Camera className="w-16 h-16 mb-4" />
-                    <p className="text-sm">Camera ready</p>
+                    <p className="text-sm">Camera initializing...</p>
                   </div>
                 )}
+              </div>
+
+              {/* Camera Status */}
+              <div className="bg-bg-elevated rounded-lg p-3">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-text-muted">Camera Status:</span>
+                  <span className={`font-medium ${
+                    cameraActive ? 'text-success' : 
+                    loading ? 'text-warning' : 
+                    error ? 'text-danger' : 'text-text-muted'
+                  }`}>
+                    {cameraActive ? '🟢 Active' : 
+                     loading ? '🟡 Loading' : 
+                     error ? '🔴 Error' : '⚪ Inactive'}
+                  </span>
+                </div>
               </div>
 
               {/* Instructions */}
@@ -285,11 +329,11 @@ const QRScannerModal = ({ isOpen, onClose, onScanSuccess }) => {
                 <div className="flex items-center justify-center gap-4 text-xs text-text-muted">
                   <div className="flex items-center gap-1">
                     <CheckCircle className="w-3 h-3 text-success" />
-                    <span>Auto-detect</span>
+                    <span>Live Camera</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <Camera className="w-3 h-3 text-primary" />
-                    <span>Camera</span>
+                    <span>Auto-detect</span>
                   </div>
                 </div>
                 
@@ -359,6 +403,7 @@ const QRScannerModal = ({ isOpen, onClose, onScanSuccess }) => {
                   }}
                   className="flex-1 btn btn-secondary"
                 >
+                  <RefreshCw className="w-4 h-4 mr-2" />
                   Scan Again
                 </button>
                 <button
@@ -376,4 +421,4 @@ const QRScannerModal = ({ isOpen, onClose, onScanSuccess }) => {
   );
 };
 
-export default QRScannerModal;
+export default QrScannerModal;

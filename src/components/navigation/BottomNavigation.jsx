@@ -11,10 +11,9 @@ import {
   User,
 } from "lucide-react";
 
-const BottomNav = ({ userRole = "SECONDARY" }) => {
+const BottomNavigation = ({ userRole = "SECONDARY" }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [activeTab, setActiveTab] = useState("dashboard");
   const [isMobile, setIsMobile] = useState(false);
 
   // Check if mobile screen
@@ -93,8 +92,6 @@ const BottomNav = ({ userRole = "SECONDARY" }) => {
         ];
 
   const handleNavClick = (item) => {
-    console.log("BottomNav clicked:", item); // Debug log
-    setActiveTab(item.id);
     navigate(item.path);
 
     // Add haptic feedback on mobile (if supported)
@@ -103,17 +100,12 @@ const BottomNav = ({ userRole = "SECONDARY" }) => {
     }
   };
 
-  // Update active tab based on current location
-  useEffect(() => {
-    const currentPath = location.pathname;
-    const matchingItem = navItems.find(
+  const activeTab =
+    navItems.find(
       (item) =>
-        currentPath === item.path || currentPath.startsWith(item.path + "/"),
-    );
-    if (matchingItem) {
-      setActiveTab(matchingItem.id);
-    }
-  }, [location.pathname, navItems]);
+        location.pathname === item.path ||
+        location.pathname.startsWith(item.path + "/"),
+    )?.id || "dashboard";
 
   // Only show on mobile screens
   if (!isMobile) {
@@ -180,4 +172,4 @@ const BottomNav = ({ userRole = "SECONDARY" }) => {
   );
 };
 
-export default BottomNav;
+export default BottomNavigation;

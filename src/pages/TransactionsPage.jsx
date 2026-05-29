@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
-import BottomNav from "../components/BottomNav";
-import AdminSidebar from "../components/AdminSidebar";
+import BottomNavigation from "../components/navigation/BottomNavigation";
+import AdminSidebar from "../components/navigation/AdminSidebar";
 import {
   ArrowLeft,
   Search,
@@ -215,7 +215,7 @@ const TransactionsPage = () => {
               {isAdmin && (
                 <button
                   onClick={() => setSidebarOpen(!sidebarOpen)}
-                  className="p-2 rounded-lg hover:bg-bg-elevated transition-colors"
+                  className="hidden lg:block p-2 rounded-lg hover:bg-bg-elevated transition-colors"
                 >
                   <Menu className="w-5 h-5 text-text" />
                 </button>
@@ -405,7 +405,7 @@ const TransactionsPage = () => {
         </div>
 
         {/* Mobile Bottom Navigation */}
-        <BottomNav userRole={user?.role} />
+        <BottomNavigation userRole={user?.role} />
       </div>
     );
   };
@@ -418,8 +418,8 @@ const TransactionsPage = () => {
           toggleSidebar={() => setSidebarOpen(!sidebarOpen)}
         />
         <div
-          className={`flex-1 transition-all duration-300 ${
-            sidebarOpen ? "ml-64" : "ml-0 lg:ml-20"
+          className={`flex-1 min-w-0 w-full flex flex-col transition-all duration-300 ml-0 lg:${
+            sidebarOpen ? "ml-64" : "ml-20"
           }`}
         >
           {renderContent()}

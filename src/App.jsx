@@ -16,13 +16,13 @@ import CareersPage from "./pages/CareersPage";
 import ContactPage from "./pages/ContactPage";
 import PrimaryDashboard from "./pages/PrimaryDashboard";
 import SecondaryDashboard from "./pages/SecondaryDashboard";
-import RealtimeDashboard from "./pages/RealtimeDashboard";
 import ProfilePage from "./pages/ProfilePage";
 import PayPage from "./pages/PayPage";
 import NotificationsPage from "./pages/NotificationsPage";
 import TransactionsPage from "./pages/TransactionsPage";
 import FamilyMembersPage from "./pages/FamilyMembersPage";
 import TestPage from "./pages/TestPage";
+import MobileDeviceFrame from "./components/layout/MobileDeviceFrame";
 import "./index.css";
 
 // Protected Route component
@@ -66,6 +66,7 @@ function AppRoutes() {
       <Route path="/blog/:postId" element={<BlogPostPage />} />
       <Route path="/careers" element={<CareersPage />} />
       <Route path="/contact" element={<ContactPage />} />
+
       <Route
         path="/login"
         element={
@@ -152,6 +153,7 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
+
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
@@ -162,7 +164,9 @@ function App() {
     <Router>
       <AuthProvider>
         <div className="App">
-          <AppRoutes />
+          <MobileDeviceFrame>
+            <AppRoutes />
+          </MobileDeviceFrame>
         </div>
       </AuthProvider>
     </Router>

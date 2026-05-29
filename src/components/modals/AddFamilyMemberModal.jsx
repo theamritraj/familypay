@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-const AddMemberModal = ({ onClose, onAdd }) => {
+const AddFamilyMemberModal = ({ isOpen, onClose, onSubmit }) => {
   const [formData, setFormData] = useState({
     secondaryUserId: "",
     dailyLimit: 1000,
@@ -9,36 +9,54 @@ const AddMemberModal = ({ onClose, onAdd }) => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleChange = (e) => {
+  const reset = () => {
+    setError("");
+    setLoading(false);
     setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
+      secondaryUserId: "",
+      dailyLimit: 1000,
+      monthlyLimit: 10000,
     });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleClose = () => {
+    reset();
+    onClose();
+  };
+
+  const handleChange = (event) => {
+    setFormData((previous) => ({
+      ...previous,
+      [event.target.name]: event.target.value,
+    }));
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
     setError("");
     setLoading(true);
 
     try {
-      await onAdd({
-        secondaryUserId: parseInt(formData.secondaryUserId),
+      await onSubmit({
+        secondaryUserId: parseInt(formData.secondaryUserId, 10),
         dailyLimit: parseFloat(formData.dailyLimit),
         monthlyLimit: parseFloat(formData.monthlyLimit),
       });
+      handleClose();
     } catch (err) {
-      setError(err.message);
+      setError(err?.message || "An error occurred");
       setLoading(false);
     }
   };
+
+  if (!isOpen) return null;
 
   return (
     <div className="modal-overlay">
       <div className="modal-content fade-in">
         <div className="modal-header">
           <h3>Add Family Member</h3>
-          <button className="modal-close" onClick={onClose}>
+          <button className="modal-close" onClick={handleClose} type="button">
             ×
           </button>
         </div>
@@ -94,7 +112,7 @@ const AddMemberModal = ({ onClose, onAdd }) => {
             <button
               type="button"
               className="btn btn-secondary"
-              onClick={onClose}
+              onClick={handleClose}
               disabled={loading}
             >
               Cancel
@@ -117,4 +135,4 @@ const AddMemberModal = ({ onClose, onAdd }) => {
   );
 };
 
-export default AddMemberModal;
+export default AddFamilyMemberModal;

@@ -1,32 +1,35 @@
 import { useState } from "react";
 
-const SetLimitModal = ({ member, onClose, onSetLimit }) => {
-  const [formData, setFormData] = useState({
+const SetMemberLimitsModal = ({ isOpen, member, onClose, onSubmit }) => {
+  const [formData, setFormData] = useState(() => ({
     dailyLimit: member?.dailyLimit || 1000,
     monthlyLimit: member?.monthlyLimit || 10000,
-  });
+  }));
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: parseFloat(e.target.value),
-    });
+  const handleChange = (event) => {
+    setFormData((previous) => ({
+      ...previous,
+      [event.target.name]: parseFloat(event.target.value) || 0,
+    }));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async (event) => {
+    event.preventDefault();
     setError("");
     setLoading(true);
 
     try {
-      await onSetLimit(formData);
+      await onSubmit(formData);
+      onClose();
     } catch (err) {
-      setError(err.message);
+      setError(err?.message || "An error occurred");
       setLoading(false);
     }
   };
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -38,6 +41,8 @@ const SetLimitModal = ({ member, onClose, onSetLimit }) => {
           <button
             onClick={onClose}
             className="p-2 hover:bg-bg-elevated rounded-lg transition-colors"
+            aria-label="Close"
+            type="button"
           >
             <span className="text-text-muted">×</span>
           </button>
@@ -83,6 +88,7 @@ const SetLimitModal = ({ member, onClose, onSetLimit }) => {
               type="button"
               onClick={onClose}
               className="flex-1 btn btn-secondary"
+              disabled={loading}
             >
               Cancel
             </button>
@@ -91,7 +97,11 @@ const SetLimitModal = ({ member, onClose, onSetLimit }) => {
               disabled={loading}
               className="flex-1 btn btn-primary"
             >
-              {loading ? "Setting..." : "Set Limits"}
+              {loading ? (
+                <div className="loading-spinner mx-auto"></div>
+              ) : (
+                "Set Limits"
+              )}
             </button>
           </div>
         </form>
@@ -100,4 +110,4 @@ const SetLimitModal = ({ member, onClose, onSetLimit }) => {
   );
 };
 
-export default SetLimitModal;
+export default SetMemberLimitsModal;
