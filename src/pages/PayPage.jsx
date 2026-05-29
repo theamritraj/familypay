@@ -3,7 +3,7 @@ import { useAuth } from "../context/AuthContext";
 import { useNavigate, useLocation } from "react-router-dom";
 import paymentService from "../services/paymentService";
 import UpiPaymentModal from "../components/modals/UpiPaymentModal";
-import BottomNavigation from "../components/navigation/BottomNavigation";
+import MobileTabBar from "../components/navigation/MobileTabBar";
 import {
   QrCode,
   CreditCard,
@@ -101,7 +101,7 @@ const PayPage = () => {
 
   const loadRecentPayments = async () => {
     try {
-      const result = await paymentService.getUserTransactions(user.id, 10);
+      const result = await paymentService.getUserTransactions(user.id, user.familyCircle, 10);
       if (result.success) {
         setRecentPayments(result.data);
       }
@@ -180,6 +180,7 @@ const PayPage = () => {
         upiId: paymentData.upiId,
         fromUserId: user.id,
         fromUserName: user.name,
+        circleId: user.familyCircle,
       });
 
       if (result.success) {
@@ -210,16 +211,11 @@ const PayPage = () => {
     setShowScanner(true);
     // In a real app, you'd integrate with camera API
     setTimeout(() => {
-      const mockQRData = {
-        upiId: "scanned@merchant",
-        name: "Scanned Merchant",
-        amount: "500",
-      };
       setPaymentData({
         ...paymentData,
-        upiId: mockQRData.upiId,
-        recipientName: mockQRData.name,
-        amount: mockQRData.amount,
+        upiId: "",
+        recipientName: "",
+        amount: "",
       });
       setShowScanner(false);
       setActiveTab("upi");
@@ -242,25 +238,18 @@ const PayPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-bg animate-fade-in pb-20 lg:pb-6">
-      {/* Header */}
-      <header className="bg-bg-card border-b border-border px-4 py-4 sm:px-6 sm:py-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <img
-              src="/logo.jpeg"
-              alt="FamilyPay"
-              className="w-10 h-10 rounded-lg"
-            />
-            <h1 className="text-xl sm:text-2xl font-bold text-text">Pay</h1>
-          </div>
-          <div className="text-sm font-medium text-text">
-            Balance: ₹{(user.balance || 10000).toLocaleString()}
-          </div>
+    <>
+      {/* Page Header */}
+      <div className="flex items-center justify-between mb-6 px-4 pt-4 sm:px-6 sm:pt-6">
+        <div className="flex items-center gap-3">
+          <h1 className="text-xl sm:text-2xl font-bold text-text">Pay</h1>
         </div>
-      </header>
+        <div className="text-sm font-medium text-text">
+          Balance: ₹{(user.balance || 10000).toLocaleString()}
+        </div>
+      </div>
 
-      <div className="px-4 py-4 sm:px-6 sm:py-6">
+      <div className="px-4 pb-4 sm:px-6 sm:pb-6">
         {/* Selected Contact Display */}
         {selectedContact && (
           <div className="card mb-6 border-2 border-primary/20 bg-primary/5">
@@ -701,7 +690,7 @@ const PayPage = () => {
       )}
 
       {/* Mobile Bottom Navigation */}
-      <BottomNavigation userRole={user?.role} />
+      <MobileTabBar userRole={user?.role} />
 
       {/* UPI Payment Modal */}
       <UpiPaymentModal
@@ -713,7 +702,7 @@ const PayPage = () => {
         }}
         onPaymentComplete={handlePaymentComplete}
       />
-    </div>
+    </>
   );
 };
 

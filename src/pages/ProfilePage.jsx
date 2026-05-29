@@ -1,8 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
-import BottomNavigation from "../components/navigation/BottomNavigation";
-import AdminSidebar from "../components/navigation/AdminSidebar";
 import {
   User,
   Mail,
@@ -29,8 +27,6 @@ import {
 
 const ProfilePage = () => {
   const { user, logout, updateProfile } = useAuth();
-  const isAdmin = user?.role === "ADMIN" || user?.role === "PRIMARY";
-  const [sidebarOpen, setSidebarOpen] = useState(true);
   const navigate = useNavigate();
 
   const [isEditing, setIsEditing] = useState(false);
@@ -81,8 +77,29 @@ const ProfilePage = () => {
         address: user.address || "",
         photoURL: user.photoURL || "",
       });
+      if (user.security) {
+        setSecurity({
+          twoFactorAuth: user.security.twoFactorAuth || false,
+          biometricLogin: user.security.biometricLogin || false,
+          loginAlerts: user.security.loginAlerts ?? true,
+          sessionTimeout: user.security.sessionTimeout ?? true,
+        });
+      }
     }
   }, [user]);
+
+  const handleToggleSecurity = async (key) => {
+    const updatedSecurity = {
+      ...security,
+      [key]: !security[key],
+    };
+    setSecurity(updatedSecurity);
+    try {
+      await updateProfile({ security: updatedSecurity });
+    } catch (err) {
+      console.error("Failed to update security settings:", err);
+    }
+  };
 
   const handleInputChange = (e) => {
     setFormData({
@@ -157,31 +174,13 @@ const ProfilePage = () => {
 
   const renderContent = () => {
     return (
-      <div className="min-h-screen bg-bg animate-fade-in pb-20 lg:pb-6 flex-1">
-        {/* Header */}
-        <header className="bg-bg-card border-b border-border px-4 py-4 sm:px-6 sm:py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              {isAdmin && (
-                <button
-                  onClick={() => setSidebarOpen(!sidebarOpen)}
-                  className="hidden lg:block p-2 rounded-lg hover:bg-bg-elevated transition-colors"
-                >
-                  <Menu className="w-5 h-5 text-text" />
-                </button>
-              )}
-              <img
-                src="/logo.jpeg"
-                alt="FamilyPay"
-                className="w-10 h-10 rounded-lg"
-              />
-              <h1 className="text-xl sm:text-2xl font-bold text-text">Profile</h1>
-            </div>
-            <button onClick={logout} className="btn btn-danger btn-sm">
-              Logout
-            </button>
+      <>
+        {/* Page Header */}
+        <div className="flex items-center justify-between mb-6 px-4 pt-4 sm:px-6 sm:pt-6">
+          <div className="flex items-center gap-3">
+            <h1 className="text-xl sm:text-2xl font-bold text-text">Profile</h1>
           </div>
-        </header>
+        </div>
 
         <div className="px-4 py-4 sm:px-6 sm:py-6">
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
@@ -305,10 +304,10 @@ const ProfilePage = () => {
                         </h3>
                         <p className="text-text-muted">
                           {user?.role === "ADMIN"
-                            ? "Administrator"
+                            ? "Platform Operator"
                             : user?.role === "PRIMARY"
-                              ? "Primary User"
-                              : "Secondary User"}
+                              ? "Circle Owner"
+                              : "Circle Member"}
                         </p>
                         <p className="text-sm text-text-muted">
                           Member since {new Date().getFullYear()}
@@ -437,12 +436,7 @@ const ProfilePage = () => {
                           </div>
                         </div>
                         <button
-                          onClick={() =>
-                            setSecurity({
-                              ...security,
-                              twoFactorAuth: !security.twoFactorAuth,
-                            })
-                          }
+                          onClick={() => handleToggleSecurity('twoFactorAuth')}
                           className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                             security.twoFactorAuth ? "bg-primary" : "bg-bg-border"
                           }`}
@@ -470,12 +464,7 @@ const ProfilePage = () => {
                           </div>
                         </div>
                         <button
-                          onClick={() =>
-                            setSecurity({
-                              ...security,
-                              loginAlerts: !security.loginAlerts,
-                            })
-                          }
+                          onClick={() => handleToggleSecurity('loginAlerts')}
                           className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                             security.loginAlerts ? "bg-primary" : "bg-bg-border"
                           }`}
@@ -787,30 +776,9 @@ const ProfilePage = () => {
             </div>
           </div>
         )}
-
-        {/* Mobile Bottom Navigation */}
-        <BottomNavigation userRole={user?.role} />
-      </div>
+      </>
     );
   };
-
-  if (isAdmin) {
-    return (
-      <div className="min-h-screen bg-bg flex">
-        <AdminSidebar
-          isOpen={sidebarOpen}
-          toggleSidebar={() => setSidebarOpen(!sidebarOpen)}
-        />
-        <div
-          className={`flex-1 min-w-0 w-full flex flex-col transition-all duration-300 ml-0 lg:${
-            sidebarOpen ? "ml-64" : "ml-20"
-          }`}
-        >
-          {renderContent()}
-        </div>
-      </div>
-    );
-  }
 
   return renderContent();
 };

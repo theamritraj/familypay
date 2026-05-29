@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { firebaseDB } from "../firebase";
 import {
   Mail,
   Lock,
@@ -100,8 +101,22 @@ const Login = () => {
       let result;
 
       if (isLogin) {
+        let loginEmail = formData.email.trim();
+        
+        // If it looks like a phone number (just digits and optional +)
+        const isPhone = /^\+?[\d\s-]{10,}$/.test(loginEmail);
+        if (isPhone) {
+          const phoneRes = await firebaseDB.getUserByPhone(loginEmail.replace(/[\s-]/g, ''));
+          if (phoneRes.success && phoneRes.data) {
+            loginEmail = phoneRes.data.email;
+          } else {
+            setFormError("No account found with this phone number");
+            return;
+          }
+        }
+
         result = await login({
-          email: formData.email,
+          email: loginEmail,
           password: formData.password,
         });
       } else {
@@ -167,9 +182,8 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/10 to-secondary/10 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="bg-bg-card rounded-2xl shadow-xl border border-border p-8">
+    <div className="min-h-screen flex items-center justify-center sm:bg-gradient-to-br sm:from-primary/10 sm:to-secondary/10 sm:p-4 bg-bg">
+      <div className="w-full h-screen sm:h-auto sm:max-w-md bg-bg-card sm:border sm:border-border sm:rounded-[8px] p-6 sm:p-8 sm:shadow-xl animate-fade-in flex flex-col justify-center">
           {/* Header */}
           <div className="flex items-center justify-center mb-8">
             <img
@@ -243,16 +257,16 @@ const Login = () => {
             {/* Email Field */}
             <div>
               <label className="block text-sm font-medium text-text mb-2">
-                <Mail className="w-4 h-4 inline mr-2" />
-                Email Address
+                <User className="w-4 h-4 inline mr-2" />
+                Email Address or Phone
               </label>
               <input
-                type="email"
+                type="text"
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
                 className="w-full px-4 py-3 bg-bg-elevated border border-border rounded-lg text-text placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                placeholder="Enter your email"
+                placeholder="Enter email or phone number"
                 required
               />
             </div>
@@ -400,7 +414,6 @@ const Login = () => {
             </div>
           )}
         </div>
-      </div>
     </div>
   );
 };
