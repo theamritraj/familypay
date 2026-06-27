@@ -1,8 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
-import BottomNavigation from "../components/navigation/BottomNavigation";
-import AdminSidebar from "../components/navigation/AdminSidebar";
 import {
   Bell,
   CheckCircle,
@@ -30,8 +28,6 @@ import {
 
 const NotificationsPage = () => {
   const { user } = useAuth();
-  const isAdmin = user?.role === "ADMIN" || user?.role === "PRIMARY";
-  const [sidebarOpen, setSidebarOpen] = useState(true);
   const navigate = useNavigate();
 
   const [notifications, setNotifications] = useState([]);
@@ -50,113 +46,10 @@ const NotificationsPage = () => {
   ];
 
   useEffect(() => {
-    // Generate mock notifications with current timestamps
-    const now = Date.now();
-    const mockNotifications = [
-      {
-        id: 1,
-        type: "payment",
-        title: "Payment Received",
-        message: "You received ₹500 from Mom",
-        timestamp: new Date(now - 1000 * 60 * 5), // 5 minutes ago
-        read: false,
-        icon: CreditCard,
-        color: "success",
-        action: "View Transaction",
-        actionUrl: "/dashboard/transactions",
-      },
-      {
-        id: 2,
-        type: "security",
-        title: "New Login Detected",
-        message: "New login from Chrome on Windows",
-        timestamp: new Date(now - 1000 * 60 * 60), // 1 hour ago
-        read: false,
-        icon: Shield,
-        color: "warning",
-        action: "Review Activity",
-        actionUrl: "/dashboard/profile",
-      },
-      {
-        id: 3,
-        type: "payment",
-        title: "Payment Approved",
-        message: "Your payment of ₹1200 has been approved",
-        timestamp: new Date(now - 1000 * 60 * 60 * 2), // 2 hours ago
-        read: true,
-        icon: CheckCircle,
-        color: "success",
-        action: "View Details",
-        actionUrl: "/dashboard/transactions",
-      },
-      {
-        id: 4,
-        type: "system",
-        title: "Monthly Report Available",
-        message: "Your spending report for November is ready",
-        timestamp: new Date(now - 1000 * 60 * 60 * 24), // 1 day ago
-        read: true,
-        icon: TrendingUp,
-        color: "info",
-        action: "View Report",
-        actionUrl: "/dashboard/analytics",
-      },
-      {
-        id: 5,
-        type: "alert",
-        title: "Low Balance Alert",
-        message: "Your balance is below ₹1000",
-        timestamp: new Date(now - 1000 * 60 * 60 * 24 * 2), // 2 days ago
-        read: true,
-        icon: AlertTriangle,
-        color: "danger",
-        action: "Add Money",
-        actionUrl: "/dashboard/payments",
-      },
-      {
-        id: 6,
-        type: "social",
-        title: "New Family Member",
-        message: "John Doe joined your family circle",
-        timestamp: new Date(now - 1000 * 60 * 60 * 24 * 3), // 3 days ago
-        read: true,
-        icon: UserPlus,
-        color: "primary",
-        action: "View Profile",
-        actionUrl: "/dashboard/members",
-      },
-      {
-        id: 7,
-        type: "promotion",
-        title: "Special Offer!",
-        message: "Get 10% cashback on your next payment",
-        timestamp: new Date(now - 1000 * 60 * 60 * 24 * 7), // 1 week ago
-        read: true,
-        icon: Gift,
-        color: "warning",
-        action: "Learn More",
-        actionUrl: "/dashboard",
-      },
-      {
-        id: 8,
-        type: "system",
-        title: "App Update Available",
-        message: "New features and improvements are available",
-        timestamp: new Date(now - 1000 * 60 * 60 * 24 * 14), // 2 weeks ago
-        read: true,
-        icon: Smartphone,
-        color: "info",
-        action: "Update Now",
-        actionUrl: "/dashboard",
-      },
-    ];
-
-    // Simulate loading notifications
-    setTimeout(() => {
-      setNotifications(mockNotifications);
-      setFilteredNotifications(mockNotifications);
-      setLoading(false);
-    }, 1000);
+    // In the future, fetch notifications from Firebase here
+    setNotifications([]);
+    setFilteredNotifications([]);
+    setLoading(false);
   }, []);
 
   useEffect(() => {
@@ -206,6 +99,11 @@ const NotificationsPage = () => {
       notifications.filter((n) => !selectedNotifications.has(n.id)),
     );
     setSelectedNotifications(new Set());
+  };
+
+  const handleRefresh = () => {
+    setLoading(true);
+    setTimeout(() => setLoading(false), 500);
   };
 
   const handleSelectNotification = (id) => {
@@ -272,55 +170,40 @@ const NotificationsPage = () => {
 
   const renderContent = () => {
     return (
-      <div className="min-h-screen bg-bg animate-fade-in pb-20 lg:pb-6 flex-1">
-        {/* Header */}
-        <header className="bg-bg-card border-b border-border px-4 py-3 sm:px-6 sm:py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              {isAdmin && (
-                <button
-                  onClick={() => setSidebarOpen(!sidebarOpen)}
-                  className="hidden lg:block p-2 rounded-lg hover:bg-bg-elevated transition-colors"
-                >
-                  <Menu className="w-5 h-5 text-text" />
-                </button>
-              )}
-              <img
-                src="/logo.jpeg"
-                alt="FamilyPay"
-                className="w-10 h-10 rounded-lg"
-              />
-              <h1 className="text-lg sm:text-xl font-bold text-text">
-                Notifications
-              </h1>
-              {unreadCount > 0 && (
-                <span className="bg-danger text-white text-xs px-2 py-0.5 rounded-full min-w-[20px] text-center">
-                  {unreadCount}
-                </span>
-              )}
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-text-muted hidden sm:inline">
-                {new Date().toLocaleTimeString("en-US", {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
+      <>
+        {/* Page Header */}
+        <div className="flex items-center justify-between mb-6 px-4 pt-4 sm:px-6 sm:pt-6">
+          <div className="flex items-center gap-3">
+            <h1 className="text-lg sm:text-xl font-bold text-text">
+              Notifications
+            </h1>
+            {unreadCount > 0 && (
+              <span className="bg-danger text-white text-xs px-2 py-0.5 rounded-full min-w-[20px] text-center">
+                {unreadCount}
               </span>
-              <button
-                onClick={handleMarkAllAsRead}
-                className="btn btn-secondary btn-sm text-xs px-3 py-1.5"
-                disabled={unreadCount === 0}
-              >
-                Mark All Read
-              </button>
-              <button className="p-2 hover:bg-bg-elevated rounded-lg transition-colors">
-                <RefreshCw className="w-4 h-4 text-text" />
-              </button>
-            </div>
+            )}
           </div>
-        </header>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleMarkAllAsRead}
+              className="hidden sm:flex items-center gap-2 p-2 sm:px-3 text-sm font-medium text-text-muted hover:text-text hover:bg-bg-elevated rounded-lg transition-colors"
+            >
+              <Check className="w-4 h-4" />
+              <span>Mark all as read</span>
+            </button>
+            <button
+              onClick={handleRefresh}
+              className={`p-2 text-text-muted hover:text-text hover:bg-bg-elevated rounded-lg transition-colors ${loading ? "animate-spin text-primary" : ""}`}
+            >
+              <RefreshCw className="w-5 h-5" />
+            </button>
+            <button className="p-2 text-text-muted hover:text-text hover:bg-bg-elevated rounded-lg transition-colors">
+              <Settings className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
 
-        <div className="px-4 py-3 sm:px-6 sm:py-4">
+        <div className="px-4 pb-4 sm:px-6 sm:pb-6">
           {/* Search and Filters */}
           <div className="space-y-3 mb-4">
             {/* Search Bar */}
@@ -475,30 +358,9 @@ const NotificationsPage = () => {
             </div>
           )}
         </div>
-
-        {/* Mobile Bottom Navigation */}
-        <BottomNavigation userRole={user?.role} />
-      </div>
+      </>
     );
   };
-
-  if (isAdmin) {
-    return (
-      <div className="min-h-screen bg-bg flex">
-        <AdminSidebar
-          isOpen={sidebarOpen}
-          toggleSidebar={() => setSidebarOpen(!sidebarOpen)}
-        />
-        <div
-          className={`flex-1 min-w-0 w-full flex flex-col transition-all duration-300 ml-0 lg:${
-            sidebarOpen ? "ml-64" : "ml-20"
-          }`}
-        >
-          {renderContent()}
-        </div>
-      </div>
-    );
-  }
 
   return renderContent();
 

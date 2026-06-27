@@ -18,7 +18,7 @@ export const paymentService = {
       if (result.success) {
         // Update circle spending if payment is completed
         if (transactionData.status === 'completed') {
-          await this.updateCircleSpending(paymentData.fromUserId, paymentData.amount);
+          await paymentService.updateCircleSpending(paymentData.fromUserId, paymentData.amount);
         }
         return { 
           success: true, 
@@ -37,9 +37,9 @@ export const paymentService = {
   },
 
   // Get user transactions
-  getUserTransactions: async (userId, limit = 50) => {
+  getUserTransactions: async (userId, circleId, limit = 50) => {
     try {
-      const result = await firebaseDB.getUserTransactions(userId, limit);
+      const result = await firebaseDB.getUserTransactions(userId, circleId, limit);
       return result;
     } catch (error) {
       return { success: false, error: error.message };
@@ -47,9 +47,9 @@ export const paymentService = {
   },
 
   // Get pending transactions (for admin)
-  getPendingTransactions: async () => {
+  getPendingTransactions: async (circleId) => {
     try {
-      const result = await firebaseDB.getPendingTransactions();
+      const result = await firebaseDB.getPendingTransactions(circleId);
       return result;
     } catch (error) {
       return { success: false, error: error.message };
@@ -130,9 +130,9 @@ export const paymentService = {
   },
 
   // Listen to real-time transaction updates
-  listenToUserTransactions: (userId, callback) => {
+  listenToUserTransactions: (userId, circleId, callback) => {
     try {
-      return firebaseDB.listenToTransactions(userId, callback);
+      return firebaseDB.listenToTransactions(userId, circleId, callback);
     } catch (error) {
       console.error('Error setting up transaction listener:', error);
       return null;
@@ -140,19 +140,39 @@ export const paymentService = {
   },
 
   // Listen to real-time pending transactions (for admin)
-  listenToPendingTransactions: (callback) => {
+  listenToPendingTransactions: (circleId, callback) => {
     try {
-      return firebaseDB.listenToPendingTransactions(callback);
+      return firebaseDB.listenToPendingTransactions(circleId, callback);
     } catch (error) {
       console.error('Error setting up pending transactions listener:', error);
       return null;
     }
   },
 
-  // Get payment statistics
-  getPaymentStats: async (userId) => {
+  // Get circle transactions (multi-tenant dashboard)
+  getCircleTransactions: async (circleId, limit = 100) => {
     try {
-      const result = await firebaseDB.getUserTransactions(userId, 100);
+      const result = await firebaseDB.getCircleTransactions(circleId, limit);
+      return result;
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  },
+
+  // Listen to circle transactions in real-time
+  listenToCircleTransactions: (circleId, callback) => {
+    try {
+      return firebaseDB.listenToCircleTransactions(circleId, callback);
+    } catch (error) {
+      console.error('Error setting up circle transactions listener:', error);
+      return null;
+    }
+  },
+
+  // Get payment statistics
+  getPaymentStats: async (userId, circleId) => {
+    try {
+      const result = await firebaseDB.getUserTransactions(userId, circleId, 100);
       if (result.success) {
         const transactions = result.data;
         const stats = {

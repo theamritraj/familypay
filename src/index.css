@@ -2,6 +2,44 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --bg-color: #f8fafc;
+  --bg-card-color: #ffffff;
+  --bg-elevated-color: #f1f5f9;
+  --text-color: #0f172a;
+  --text-muted-color: #64748b;
+  --border-color: rgba(0, 0, 0, 0.08);
+
+  /* Plain CSS variables mapping */
+  --bg: #f8fafc;
+  --bg-card: #ffffff;
+  --bg-elevated: #f1f5f9;
+  --text: #0f172a;
+  --text-muted: #64748b;
+  --border: rgba(0, 0, 0, 0.08);
+  --primary: #6366f1;
+  --secondary: #8b5cf6;
+}
+
+.dark {
+  --bg-color: #0a0a0f;
+  --bg-card-color: #16161f;
+  --bg-elevated-color: #1e1e2a;
+  --text-color: #f1f1f3;
+  --text-muted-color: #9ca3af;
+  --border-color: rgba(255, 255, 255, 0.06);
+
+  /* Plain CSS variables mapping */
+  --bg: #0a0a0f;
+  --bg-card: #16161f;
+  --bg-elevated: #1e1e2a;
+  --text: #f1f1f3;
+  --text-muted: #9ca3af;
+  --border: rgba(255, 255, 255, 0.06);
+  --primary: #6366f1;
+  --secondary: #8b5cf6;
+}
+
 /* Custom base styles */
 @layer base {
   html {
@@ -16,7 +54,7 @@
 /* Custom component styles */
 @layer components {
   .btn {
-    @apply px-4 py-2 rounded-default font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/50;
+    @apply px-4 py-2 rounded-[8px] font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/50;
   }
   
   .btn-primary {
@@ -36,11 +74,11 @@
   }
   
   .form-input {
-    @apply w-full px-3 py-2 bg-bg-card border border-border rounded-default text-text placeholder-text-muted focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/50;
+    @apply w-full px-3 py-2 bg-bg-card border border-border rounded-[8px] text-text placeholder-text-muted focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/50;
   }
   
   .form-select {
-    @apply w-full px-3 py-2 bg-bg-card border border-border rounded-default text-text focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/50;
+    @apply w-full px-3 py-2 bg-bg-card border border-border rounded-[8px] text-text focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/50;
   }
   
   .form-checkbox {

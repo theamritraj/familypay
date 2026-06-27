@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { firebaseAuth, firebaseDB, userService } from "../firebase";
-import { mockAuthService } from "../services/mockAuthService";
 
 const AuthContext = createContext();
 
@@ -16,6 +15,30 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [darkMode, setDarkMode] = useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("theme");
+      return saved === "dark" || !saved;
+    }
+    return true;
+  });
+
+  // Apply dark mode class dynamically
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  }, [darkMode]);
+
+  const toggleDarkMode = () => {
+    setDarkMode((prev) => {
+      const next = !prev;
+      localStorage.setItem("theme", next ? "dark" : "light");
+      return next;
+    });
+  };
 
   // Listen to auth state changes
   useEffect(() => {
@@ -61,54 +84,18 @@ export const AuthProvider = ({ children }) => {
     try {
       setError(null);
       setLoading(true);
+      // Use Firebase authentication for all users
+      const result = await firebaseAuth.signIn(
+        credentials.email,
+        credentials.password,
+      );
 
-      // Check if credentials match mock admin user
-      if (
-        credentials.email === "rajnish@familypay.com" &&
-        credentials.password === "admin123"
-      ) {
-        // Use mock authentication for admin
-        const result = await mockAuthService.signIn(
-          credentials.email,
-          credentials.password,
-        );
-
-        if (result.success) {
-          // Get mock user data
-          const userDataResult = await mockAuthService.getUserData(
-            result.user.uid,
-          );
-
-          if (userDataResult.success) {
-            setUser({
-              id: result.user.uid,
-              email: result.user.email,
-              photoURL: result.user.photoURL,
-              ...userDataResult.data,
-            });
-            return { success: true, data: result.user };
-          } else {
-            setError(userDataResult.error);
-            return { success: false, error: userDataResult.error };
-          }
-        } else {
-          setError(result.error);
-          return { success: false, error: result.error };
-        }
+      if (result.success) {
+        // User data will be set by the onAuthStateChanged listener
+        return { success: true, data: result.user };
       } else {
-        // Use Firebase authentication for other users
-        const result = await firebaseAuth.signIn(
-          credentials.email,
-          credentials.password,
-        );
-
-        if (result.success) {
-          // User data will be set by the onAuthStateChanged listener
-          return { success: true, data: result.user };
-        } else {
-          setError(result.error);
-          return { success: false, error: result.error };
-        }
+        setError(result.error);
+        return { success: false, error: result.error };
       }
     } catch (error) {
       const errorMessage = error.message;
@@ -306,6 +293,8 @@ export const AuthProvider = ({ children }) => {
     logout,
     updateProfile,
     adminFunctions,
+    darkMode,
+    toggleDarkMode,
     isAuthenticated: !!user,
     isPrimary: user?.role === "PRIMARY",
     isSecondary: user?.role === "SECONDARY",

@@ -1,0 +1,18 @@
+{
+  "name": "FamilyPay",
+  "short_name": "FamilyPay",
+  "description": "NPCI Circle Payment Management System for Families",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#0a0a0f",
+  "theme_color": "#6366f1",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/logo.jpeg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 export default {
+  darkMode: 'class',
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
@@ -17,12 +18,12 @@ export default {
         warning: '#f59e0b',
         danger: '#ef4444',
         info: '#06b6d4',
-        bg: '#0a0a0f',
-        'bg-card': '#16161f',
-        'bg-elevated': '#1e1e2a',
-        text: '#f1f1f3',
-        'text-muted': '#9ca3af',
-        border: 'rgba(255, 255, 255, 0.06)',
+        bg: 'var(--bg-color)',
+        'bg-card': 'var(--bg-card-color)',
+        'bg-elevated': 'var(--bg-elevated-color)',
+        text: 'var(--text-color)',
+        'text-muted': 'var(--text-muted-color)',
+        border: 'var(--border-color)',
       },
       spacing: {
         'xs': '0.5rem',
