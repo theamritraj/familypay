@@ -9,17 +9,15 @@ ReactDOM.createRoot(document.getElementById('root')).render(
   </React.StrictMode>
 );
 
-// Register service worker for installable PWA experience
+// Unregister any existing rogue service workers to fix blank screen caching issues
 if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker
-      .register("/sw.js")
-      .then((reg) => {
-        console.log("Service Worker registered successfully:", reg.scope);
-      })
-      .catch((err) => {
-        console.warn("Service Worker registration failed:", err);
-      });
+  navigator.serviceWorker.getRegistrations().then(function(registrations) {
+    for(let registration of registrations) {
+      registration.unregister().then(
+        () => console.log("Service Worker unregistered successfully."),
+        (err) => console.log("Error unregistering Service Worker:", err)
+      );
+    }
   });
 }
 
