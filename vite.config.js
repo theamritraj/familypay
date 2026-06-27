@@ -12,6 +12,9 @@ dotenv.config({ path: path.resolve(__dirname, '.env') });
 
 // https://vite.dev/config/
 export default defineConfig({
+  server: {
+    allowedHosts: true, // Allow localtunnel hosts
+  },
   plugins: [
     react(),
     {
