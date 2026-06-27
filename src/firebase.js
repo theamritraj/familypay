@@ -32,13 +32,13 @@ import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyB18If01xpZQMiVlVNj4CvItsue9hOo4Wg",
-  authDomain: "familypay-11672.firebaseapp.com",
-  projectId: "familypay-11672",
-  storageBucket: "familypay-11672.firebasestorage.app",
-  messagingSenderId: "264062515995",
-  appId: "1:264062515995:web:e990b9e4d5b93e526a31be",
-  measurementId: "G-M1YK840FHB",
+  apiKey: "AIzaSyAzNPVUu0BBoF3c44SEaaryl7fXd1Z0a1k",
+  authDomain: "fmgp-14fec.firebaseapp.com",
+  projectId: "fmgp-14fec",
+  storageBucket: "fmgp-14fec.firebasestorage.app",
+  messagingSenderId: "710284365652",
+  appId: "1:710284365652:web:170e609c3c4a5aa14082c1",
+  measurementId: "G-XM4J1W4QX1",
 };
 
 // Initialize Firebase
