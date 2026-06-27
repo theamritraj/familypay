@@ -47,9 +47,10 @@ const PayPage = () => {
   const [description, setDescription] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("upi");
   const [recentPayments, setRecentPayments] = useState([]);
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const [showUPIPaymentModal, setShowUPIPaymentModal] = useState(false);
+  const [showScanner, setShowScanner] = useState(false);
   const [paymentData, setPaymentData] = useState({
     amount: "",
     upiId: "",
@@ -58,7 +59,7 @@ const PayPage = () => {
     paymentMethod: "upi",
   });
 
-  const [quickAmounts] = [100, 200, 500, 1000, 2000, 5000];
+  const quickAmounts = [100, 200, 500, 1000, 2000, 5000];
 
   const frequentContacts = [
     { name: "Mom", upiId: "mom@familypay", avatar: "M" },
